@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		BA39195B22D7271500D8C20B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA39195A22D7271500D8C20B /* main.cpp */; };
+		BA39196322D7330B00D8C20B /* triangulation_class.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA39196122D7330B00D8C20B /* triangulation_class.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +26,9 @@
 /* Begin PBXFileReference section */
 		BA39195722D7271500D8C20B /* GBM */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GBM; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA39195A22D7271500D8C20B /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		BA39196122D7330B00D8C20B /* triangulation_class.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = triangulation_class.cpp; sourceTree = "<group>"; };
+		BA39196222D7330B00D8C20B /* triangulation_class.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = triangulation_class.hpp; sourceTree = "<group>"; };
+		BA39196422D735D800D8C20B /* main.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = main.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,6 +62,9 @@
 			isa = PBXGroup;
 			children = (
 				BA39195A22D7271500D8C20B /* main.cpp */,
+				BA39196422D735D800D8C20B /* main.hpp */,
+				BA39196122D7330B00D8C20B /* triangulation_class.cpp */,
+				BA39196222D7330B00D8C20B /* triangulation_class.hpp */,
 			);
 			path = GBM;
 			sourceTree = "<group>";
@@ -118,6 +125,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA39196322D7330B00D8C20B /* triangulation_class.cpp in Sources */,
 				BA39195B22D7271500D8C20B /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

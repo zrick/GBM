@@ -6,10 +6,20 @@
 //  Copyright © 2019 Cedrick Ansorge. All rights reserved.
 //
 
-#include <iostream>
-
+#include "main.hpp"
+#include "triangulation_class.hpp"
 int main(int argc, const char * argv[]) {
     // insert code here...
-    std::cout << "Hello, World!\n";
+    char fname[MAX_CHAR_LEN];
+    int status;
+    
+    
+    strcpy(fname, "/Users/zrick/WORK/research_projects/GBM/triangles.txt");
+
+    Triangulation tri(fname);
+    
+    std::cout << "Starting GBM \n";
+ 
     return 0;
 }
+
