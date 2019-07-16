@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		BA39195B22D7271500D8C20B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA39195A22D7271500D8C20B /* main.cpp */; };
 		BA39196322D7330B00D8C20B /* triangulation_class.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA39196122D7330B00D8C20B /* triangulation_class.cpp */; };
+		BA8C075F22DDBFEC001FE493 /* utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA8C075D22DDBFEC001FE493 /* utils.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -29,6 +30,8 @@
 		BA39196122D7330B00D8C20B /* triangulation_class.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = triangulation_class.cpp; sourceTree = "<group>"; };
 		BA39196222D7330B00D8C20B /* triangulation_class.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = triangulation_class.hpp; sourceTree = "<group>"; };
 		BA39196422D735D800D8C20B /* main.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = main.hpp; sourceTree = "<group>"; };
+		BA8C075D22DDBFEC001FE493 /* utils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = utils.cpp; sourceTree = "<group>"; };
+		BA8C075E22DDBFEC001FE493 /* utils.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = utils.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +68,8 @@
 				BA39196422D735D800D8C20B /* main.hpp */,
 				BA39196122D7330B00D8C20B /* triangulation_class.cpp */,
 				BA39196222D7330B00D8C20B /* triangulation_class.hpp */,
+				BA8C075D22DDBFEC001FE493 /* utils.cpp */,
+				BA8C075E22DDBFEC001FE493 /* utils.hpp */,
 			);
 			path = GBM;
 			sourceTree = "<group>";
@@ -125,6 +130,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA8C075F22DDBFEC001FE493 /* utils.cpp in Sources */,
 				BA39196322D7330B00D8C20B /* triangulation_class.cpp in Sources */,
 				BA39195B22D7271500D8C20B /* main.cpp in Sources */,
 			);

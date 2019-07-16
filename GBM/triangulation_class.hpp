@@ -8,19 +8,84 @@
 
 #ifndef triangulation_class_hpp
 
+#include "main.hpp"
+#include "utils.hpp"
+
+#define MAX_VRT_TTR 32
+#define MAX_VRT_TRI 64
+#define MAX_VRT_EDG 32
+
+#define MAX_EDG_TRI 16
+#define MAX_EDG_TTR 16
+
+#define MAX_TTR_ADJ 32
+
+typedef struct VertexType{
+    double p[3];   // position
+    double e;      // elevation on unit-paraboloid ( 2-norm of p; )
+    int edg[MAX_VRT_EDG];
+    int tri[MAX_VRT_TRI];
+    int ttr[MAX_VRT_TTR];
+    int nVrtEdg=0, nVrtTri=0, nVrtTtr=0;
+    bool bdy;
+} VertexType;
+
+typedef struct EdgeType{
+    int vrt[2];      // Vertices connected
+    int ttr[MAX_EDG_TTR];      // Tetrahedrons sharing this edge
+    int tri[MAX_EDG_TRI];     // Triangles sharing this edge
+    int nEdgTtr=0, nEdgTri=0;
+    bool bdy;
+} EdgeType;
+
+typedef struct TriType{
+    int vrt[3];    // Vertices
+    int edg[3];    // Edges
+    int ttr[2];    // Tetrahedrons
+    bool bdy;    // true if part of external surface
+    double c[3]; // Centroid
+    double n[3]; // Normal
+} TriType;
+
+typedef struct TetraType{
+    int vrt[4];     // Vertices
+    int tri[4];     // Triangles
+    int edg[6];     // Edges
+    double c[3];  // Centroid point
+    
+   
+    int n[4];   // Neighbors (sharing a surface)
+    int a[MAX_TTR_ADJ];  // adjacents (sharing an edge)
+    bool bdy;
+    int n_neighbor=0;
+    int n_adjacent=0;
+} TetraType;
+
 class Triangulation{
     
 public:
     // Constructors
     Triangulation();
     Triangulation(char *fname);
+ 
+    void printGrid();
     
+    TetraType *ttr;      // 3D Tetrahedrons
+    VertexType *vrt;     // 0D Vertex Points
+    std::vector<TriType>    tri;     // 2D Triangles (surfaces of Tetrahedrons)
+    std::vector<EdgeType>   edg;    // 1D Edges of Tetrahedrons and Triangles
+
+    std::vector<TriType *>  hul;     // Exterior Surface of Triangulation
     // Members
-    int status;
+    int nDim, nVrt, nEdg, nTri, nTtr, nHul;
     
 private:
-    int parse_triangle_file(char *fname);
-    
+    void read_mesh(char *fname);
+    int add_edges(int it, TetraType *t);
+    int add_tris(int it, TetraType *t);
+    int is_triangle(int v[3]);
+    int is_edge(int v0, int v1);
+    void sort4(int a[4]); 
 };
 
 #define triangulation_class_hpp

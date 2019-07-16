@@ -14,8 +14,11 @@
 #include <stdio.h>
 #include <fstream>
 #include <sstream>
-#include <string>
+#include <cstring>
 #include <sys/stat.h>
+#include <vector>
+#include <utility>
+#include <algorithm>
 
 #define main_h
 
