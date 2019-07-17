@@ -24,7 +24,7 @@ void Triangulation::read_mesh(char *fname){
     
     using namespace std; 
     // LOCAL DECLARATIONS
-    int iLine=0,nEdgCommon,newEdges,newTris;
+    int iLine=0,nEdgCommon;
     struct stat buffer;
     string line;
     ifstream tfile(fname);
@@ -70,6 +70,7 @@ void Triangulation::read_mesh(char *fname){
         lss >> p_vrt->p[0] >> p_vrt->p[1] >> p_vrt->p[2] >> p_vrt->e;
     }
     
+    cout << "Processed Vertices\n";
     // READ TETRAHEDRONS
     {
         getline(tfile,line); iLine++;
@@ -79,6 +80,8 @@ void Triangulation::read_mesh(char *fname){
     
     cout << "Reading " << nTtr << "Tetrahedrons" << '\n';
     ttr = (TetraType *) malloc (nTtr * sizeof(TetraType));
+    edg.reserve(7*nVrt*sizeof(EdgeType));
+    tri.reserve(14*nVrt*sizeof(TriType));
     for ( int iTtr=0; iTtr<nTtr; ++iTtr) {
         p_ttr=&ttr[iTtr];
         getline(tfile,line);
@@ -106,27 +109,18 @@ void Triangulation::read_mesh(char *fname){
             p_vrt->ttr[p_vrt->nVrtTtr]=iTtr;
             p_vrt->nVrtTtr++;
         }
-        newEdges=add_edges(iTtr,p_ttr);  // update list of edges
-        newTris =add_tris(iTtr,p_ttr);   // update list of triangles
+        add_edges(iTtr,p_ttr);  // update list of edges
+        add_tris(iTtr,p_ttr);   // update list of triangles
         
     }
-    
+    cout << "Processed Tetrahedrons \n";
     // Fix Neighbors
     for ( int iTtr=0; iTtr<nTtr; ++iTtr ) {
         p_ttr=&ttr[iTtr];
-        /*
-        cout << "Tetra " << iTetra << " EDGES: ";
-        for (int iEdg=0; iEdg<6; ++iEdg) cout << t->e[iEdg] << " ";
-        cout << '\n';
-         */
-        
+
         for (int iAdj=0; iAdj <p_ttr->n_adjacent; iAdj++ )
         {
             int i_other = p_ttr->a[iAdj];
-            /*
-            cout << "ADJACENT TETRA:" << i_other <<  "Edges: ";
-            for ( int iEdg=0; iEdg<6; ++iEdg) cout << tetras[i_other].e[iEdg] << " ";
-            */
             nEdgCommon=0;
             for ( int iEdg=0; iEdg<6; ++ iEdg){
                 for ( int iEdg2=0; iEdg2<6; ++iEdg2) {
@@ -141,7 +135,7 @@ void Triangulation::read_mesh(char *fname){
                 
                 if ( p_ttr->n_neighbor > 4 ) {
                     cout << "ERROR: Internal Error; the number of neighbors cannot be larger than 4 \n \
-                    Found " << p_ttr->n_neighbor << '\n';
+                    Found " << p_ttr->n_neighbor << "for Tetra " << iTtr << '\n';
                     exit(EXIT_FAILURE);
                 }
             } else if ( nEdgCommon != 1 ) {
@@ -155,14 +149,18 @@ void Triangulation::read_mesh(char *fname){
         }
     }
     
+    cout << "Fixed Neighbors\n";
+    
     // Construct Hull; fix boudary property of vertices, edges, and terahedras
     for ( int iTri=0; iTri<nTri; ++iTri)
         if ( tri[iTri].bdy == true )
         {
             hul.push_back( &tri[iTri] );
-          //  todo : fix according properties of vertices, edges and tetrahedras
+          //  TODO : fix according properties of vertices, edges and tetrahedras
             nHul++;
         }
+
+    cout << "Calculated Hull\n";
     return;
 }
 
@@ -185,8 +183,10 @@ int Triangulation::add_tris(int it, TetraType *t){
             tri_loc.edg[2]=is_edge(v[1],v[2]);
 
             for (int d=0; d<3; ++d) {
-                tri_loc.vrt[d]=v[d];                // add vertices
-                tri_loc.c[d]+= vrt[v[d]].p[d] /3.;  // calculate centre
+                tri_loc.vrt[d]=v[d];                 // add vertices
+                tri_loc.c[d]=0.;                     // calculate centre
+                for(int dd=0;dd<3;++dd)
+                    tri_loc.c[d] += vrt[v[dd]].p[d] /3.;
                 if ( vrt[v[d]].nVrtTri >= MAX_VRT_TRI ) {
                     std::cout << "ERROR: Too many triangles (" <<vrt[v[d]].nVrtTri <<") for Vertex" << v[d] << '\n';
                     exit(EXIT_FAILURE);
@@ -210,7 +210,6 @@ int Triangulation::add_tris(int it, TetraType *t){
             tri[itri_loc].ttr[1]=it;
             tri[itri_loc].bdy=false;
         }
-            
         
         t->tri[i]=itri_loc;
         for (int d=0; d<3; ++d) {
@@ -226,16 +225,31 @@ int Triangulation::add_tris(int it, TetraType *t){
 }
 
 int Triangulation::is_triangle(int v[3]){
+    TriType *t_loc;
+    VertexType *v_loc;
+    for ( int i=0; i<3; ++i){
+        v_loc=&vrt[v[i]];
+        for ( int i2=0; i2 < v_loc->nVrtTri; ++i2)
+        {
+            t_loc=&tri[v_loc->tri[i2]];
+            if ( t_loc->vrt[0] == v[0] && t_loc->vrt[1] == v[1] && t_loc->vrt[2] == v[2] )
+                return v_loc->tri[i2];
+        }
+    }
+    return -1;
+    
+  /*
     for (int i=0; i<nTri; ++i)
         if ( tri[i].vrt[0] == v[0] && tri[i].vrt[1] == v[1] && tri[i].vrt[2] == v[2] )
             return(i);
     return (-1);
+   */
 }
 
 int Triangulation::add_edges(int it, TetraType *t){
     
     using namespace std; 
-    int v0,v1, inew=0,iEdg,iEdg_loc=0,iTtr_loc,i2;
+    int v0,v1, inew=0,iEdg,iEdg_loc=0,iTtr_loc;
     TetraType *t_other;
     VertexType *v;
     
@@ -252,11 +266,7 @@ int Triangulation::add_edges(int it, TetraType *t){
                 // recover other tetrahedrons from edge properties and tell them we are adjacent
                 for ( int it_loc=0; it_loc<edg[iEdg].nEdgTtr; ++it_loc) {
                     iTtr_loc=edg[iEdg].ttr[it_loc];
-        
-                    for (i2=0; i2<t->n_adjacent; ++i2){
-                        if ( t->a[i2] == iTtr_loc ) break;
-                    }
-                    if (i2 == t->n_adjacent) {
+                    if (ifind(t->a,t->n_adjacent,iTtr_loc) == t->n_adjacent) {
                         if ( t->n_adjacent >= MAX_TTR_ADJ ) {
                             std::cout << "ERROR: Too many adjacent tetras (" << t->n_adjacent << ") on Tetra " << iTtr_loc;
                             exit(EXIT_FAILURE);
@@ -267,10 +277,7 @@ int Triangulation::add_edges(int it, TetraType *t){
                    
                     t_other = &ttr[iTtr_loc];
            
-                    for (i2=0;i2<t_other->n_adjacent; ++i2){
-                        if ( t_other->a[i2] == it ) break;
-                    }
-                    if ( i2 == t_other->n_adjacent ) {
+                    if ( ifind(t_other->a,t_other->n_adjacent,it) == t_other->n_adjacent ) {
                         t_other->a[t_other->n_adjacent]=it;
                         t_other->n_adjacent++;
                     }
@@ -296,10 +303,7 @@ int Triangulation::add_edges(int it, TetraType *t){
                 t->edg[iEdg_loc]=nEdg;
                 
                 v=&vrt[v0];
-                for ( i2 =0; i2<v->nVrtEdg; ++i2) {
-                    if ( v->edg[i2] == nEdg ) break;
-                }
-                if ( i2 == v->nVrtEdg) {
+                if ( ifind(v->edg,v->nVrtEdg,nEdg) == v->nVrtEdg) {
                     if ( v->nVrtEdg >= MAX_VRT_EDG ) {
                         cout << "ERROR: Too many Edges (" << v->nVrtEdg << ") on Vertex " << v0 << '\n';
                         exit(EXIT_FAILURE);
@@ -309,10 +313,7 @@ int Triangulation::add_edges(int it, TetraType *t){
                 }
                
                 v=&vrt[v1];
-                for ( i2=0; i2<v->nVrtEdg; ++i2){
-                    if ( v->edg[i2] == nEdg) break;
-                }
-                if ( i2 == v->nVrtEdg ){
+                if ( ifind(v->edg,v->nVrtEdg,nEdg) == v->nVrtEdg ){
                     if ( v->nVrtEdg >= MAX_VRT_EDG ) {
                         cout << "ERROR: Too many Edges (" << v->nVrtEdg << ") on Vertex " << v1 << '\n';
                         exit(EXIT_FAILURE);
@@ -320,10 +321,6 @@ int Triangulation::add_edges(int it, TetraType *t){
                     v->edg[v->nVrtEdg] = nEdg;
                     v->nVrtEdg++;
                 }
-                /*if (find (v->edges.begin(),v->edges.end(),nEdg-1) == v->edges.end() ) {
-                    v->edges.push_back(nEdg-1);
-                    v->nEdg++;
-                }*/
                 inew++;
                 nEdg++;
             }
@@ -334,81 +331,82 @@ int Triangulation::add_edges(int it, TetraType *t){
 }
 
 int Triangulation::is_edge(int v0, int v1){
-    
-    for ( int iEdg=0; iEdg < nEdg; ++iEdg ) {
-        if ( edg[iEdg].vrt[0] == v0 && edg[iEdg].vrt[1] == v1 )
-            return(iEdg);
-    }
-    // 
+    // check if one of the vertices already holds this edge
+    for ( int iEdg=0; iEdg < vrt[v0].nVrtEdg; ++iEdg )
+        if ( edg[vrt[v0].edg[iEdg]].vrt[1] == v1 )
+            return vrt[v0].edg[iEdg];
     return ( -1 );
 }
 
-void Triangulation::printGrid(){
+void Triangulation::printGrid(int level ){
+    /* PARAMETER level:
+        0 - bulk grid information;
+        1 - basic connectivity;
+        2 - detailed connectivity   */
     
     using namespace std;
+    
     VertexType *v;
     TetraType *t;
 
-    cout << '\n' << nVrt << " VERTICES\n==============\n";
-    for ( int i=0; i<nVrt; ++i){
+    if ( level >= 0 )
+            cout << '\n' << nVrt << " VERTICES\n==============\n";
+    if ( level > 0 ) for ( int i=0; i<nVrt; ++i){
         v=&vrt[i];
         cout << "Vrt " << i << "(";
-        for (int i2=0; i2<3; ++i2) cout << v->p[i2] <<";";
+        if (level >0 ) for (int i2=0; i2<3; ++i2) cout << v->p[i2] <<";";
         cout <<  "):" << v->nVrtEdg << "Edg: " ;
-        for (int i2=0; i2<v->nVrtEdg; ++i2) cout << v->edg[i2] <<";";
+        if ( level>1) for (int i2=0; i2<v->nVrtEdg; ++i2) cout << v->edg[i2] <<";";
         cout << v->nVrtTri << "Tri: ";
-        for (int i2=0; i2<v->nVrtTri; ++i2) cout << v->tri[i2] <<";";
+        if (level>1)  for (int i2=0; i2<v->nVrtTri; ++i2) cout << v->tri[i2] <<";";
         cout << v->nVrtTtr << "Ttr: ";
-        for (int i2=0; i2<v->nVrtTtr; ++i2) cout << v->ttr[i2] <<";";
-        cout << '\n' ;
+        if ( level>1) for (int i2=0; i2<v->nVrtTtr; ++i2) cout << v->ttr[i2] <<";";
+        cout << "\n" ;
     }
     
-    cout << '\n' << nEdg << " EDGES\n==============\n";
-    for ( int i=0; i<nEdg; ++i){
+    if ( level >= 0 )
+        cout << nEdg << " EDGES\n==============\n";
+    if ( level > 0 ) for ( int i=0; i<nEdg; ++i){
         cout << "Edg " << i <<"("<< edg[i].vrt[0] << '-' <<  edg[i].vrt[1] << "):"<<  edg[i].nEdgTri << "Tri: ";
-        for    (int n=0; n<edg[i].nEdgTri;   ++n) {
-            cout << edg[i].tri[n] << " ";
-        }
+        if ( level > 1 ) for    (int n=0; n<edg[i].nEdgTri;   ++n) cout << edg[i].tri[n] << " ";
         cout << ";  " << edg[i].nEdgTtr << "Ttr: " ;
-        for    (int n=0; n<edg[i].nEdgTtr; ++n) {
-            cout << edg[i].ttr[n] << " ";
-        }
-        cout << '\n';
+        if ( level > 1 ) for    (int n=0; n<edg[i].nEdgTtr; ++n) cout << edg[i].ttr[n] << " ";
+        cout << "\n";
     }
     
-    cout << '\n' << nTri << " TRIANGLES\n=================\n";
-    for ( int i=0; i<nTri; ++i){
+    if ( level >= 0 ) cout << nTri << " TRIANGLES\n=================\n";
+    if ( level > 0 ) for ( int i=0; i<nTri; ++i){
         cout <<"Tri " << i <<":(";
-        for ( int d=0; d<3; ++d ) cout << tri[i].vrt[d] << ( d<2? "-" : ""  );
-        cout << ") Edg: ";
-        for ( int d=0; d<3; ++d ) cout << tri[i].edg[d] << ";";
-        cout << " Ttr: ";
-        for (int d=0; d<2; ++d) cout << tri[i].ttr[d] << ";";
-        cout <<'\n';
+        if ( level > 0 ) for ( int d=0; d<3; ++d ) cout << tri[i].vrt[d] << ( d<2? "-" : ")"  );
+        if ( level >1 ) {
+            cout << ") Edg: ";
+            for ( int d=0; d<3; ++d ) cout << tri[i].edg[d] << ";";
+            cout << " Ttr: ";
+            for (int d=0; d<2; ++d) cout << tri[i].ttr[d] << ";";
+        }
+        cout <<"\n";
     }
-
     
-    cout << '\n' << nTtr <<" TETRAHEDRONS\n=================\n";
-    for ( int i=0; i<nTtr; ++i){
+    if ( level>= 0 ) cout << nTtr <<" TETRAHEDRONS\n=================\n";
+    if ( level> 0 ) for ( int i=0; i<nTtr; ++i){
         t=&ttr[i];
         cout << "Ttr " << i <<"(";
         for (int i2=0; i2<3; ++i2) cout << t->c[i2] << " ";
         cout <<") Vrt:";
         for (int i2=0; i2<4; ++i2) cout << t->vrt[i2] << ";";
-        cout << "Edg: ";
-        for (int i2=0; i2<6; ++i2) cout << t->edg[i2] << ";";
-        cout << "Tri: ";
-        for (int i2=0; i2<4; ++i2) cout << t->tri[i2] << ";";
-        cout << "Adj: ";
-        for ( int i2=0;i2<t->n_adjacent; ++i2) cout << t->a[i2] << ";";
-        cout << "Ngh: ";
-        for ( int i2=0;i2<t->n_neighbor; ++i2) cout << t->n[i2] << ";";
-        cout << '\n';
+        if ( level > 1 ) {
+            cout << "Edg: ";
+            if ( level> 1 ) for (int i2=0; i2<6; ++i2) cout << t->edg[i2] << ";";
+            cout << "Tri: ";
+            if ( level> 1 ) for (int i2=0; i2<4; ++i2) cout << t->tri[i2] << ";";
+        }
+        cout << "(" << t->n_adjacent << " Adj): ";
+        if ( level> 1 ) for ( int i2=0;i2<t->n_adjacent; ++i2) cout << t->a[i2] << ";";
+        cout << "(" << t->n_neighbor << " Ngh): ";
+        if ( level> 1 ) for ( int i2=0;i2<t->n_neighbor; ++i2) cout << t->n[i2] << ";";
+        cout << "\n";
     }
-    
-    
 }
-
 
 void Triangulation::sort4(int a[4])
 {
@@ -426,4 +424,12 @@ void Triangulation::sort4(int a[4])
     }                                // all (four) values in order
     
     return;
+}
+
+
+int Triangulation::ifind(int *v, int n, int val)
+{
+    for ( int i=0; i<n; ++i)
+        if ( v[i] == val ) return(i);
+    return n;
 }

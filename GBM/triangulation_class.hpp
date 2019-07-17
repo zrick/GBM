@@ -11,12 +11,12 @@
 #include "main.hpp"
 #include "utils.hpp"
 
-#define MAX_VRT_TTR 32
-#define MAX_VRT_TRI 64
-#define MAX_VRT_EDG 32
+#define MAX_VRT_TTR 128
+#define MAX_VRT_TRI 128
+#define MAX_VRT_EDG 128
 
-#define MAX_EDG_TRI 16
-#define MAX_EDG_TTR 16
+#define MAX_EDG_TRI 32
+#define MAX_EDG_TTR 32
 
 #define MAX_TTR_ADJ 32
 
@@ -42,9 +42,9 @@ typedef struct TriType{
     int vrt[3];    // Vertices
     int edg[3];    // Edges
     int ttr[2];    // Tetrahedrons
-    bool bdy;    // true if part of external surface
     double c[3]; // Centroid
     double n[3]; // Normal
+    bool bdy;    // true if part of external surface
 } TriType;
 
 typedef struct TetraType{
@@ -52,13 +52,11 @@ typedef struct TetraType{
     int tri[4];     // Triangles
     int edg[6];     // Edges
     double c[3];  // Centroid point
-    
-   
     int n[4];   // Neighbors (sharing a surface)
     int a[MAX_TTR_ADJ];  // adjacents (sharing an edge)
-    bool bdy;
     int n_neighbor=0;
     int n_adjacent=0;
+    bool bdy;
 } TetraType;
 
 class Triangulation{
@@ -68,7 +66,7 @@ public:
     Triangulation();
     Triangulation(char *fname);
  
-    void printGrid();
+    void printGrid(int level);
     
     TetraType *ttr;      // 3D Tetrahedrons
     VertexType *vrt;     // 0D Vertex Points
@@ -85,7 +83,8 @@ private:
     int add_tris(int it, TetraType *t);
     int is_triangle(int v[3]);
     int is_edge(int v0, int v1);
-    void sort4(int a[4]); 
+    void sort4(int a[4]);
+    int ifind(int *v, int n, int val);
 };
 
 #define triangulation_class_hpp

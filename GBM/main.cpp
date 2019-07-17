@@ -17,7 +17,7 @@ int main(int argc, const char * argv[]) {
     Triangulation tri(fname);
     //Triangulation tri;
     
-    tri.printGrid();
+    tri.printGrid(0);
     
     std::cout << "Starting GBM \n";
     
