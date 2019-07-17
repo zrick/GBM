@@ -90,12 +90,9 @@ private:
     int add_tris(int it, TetraType *t);
     int is_triangle(int v[3]);
     int is_edge(int v0, int v1);
-    void sort4(int a[4]);
-    int ifind(int *v, int n, int val);
+    
 };
 
 #define triangulation_class_hpp
-
-#include <stdio.h>
 
 #endif /* triangulation_class_hpp */
