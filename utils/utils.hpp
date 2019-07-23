@@ -1,20 +1,20 @@
 //
 //  utils.hpp
-//  GBM
+//  utils
 //
-//  Created by Cedrick Ansorge on 16.07.19.
+//  Created by Cedrick Ansorge on 23.07.19.
 //  Copyright © 2019 Cedrick Ansorge. All rights reserved.
 //
 
-#ifndef utils_hpp
-#define utils_hpp
+#ifndef utils_
+#define utils_
 
 #include <stdio.h>
-#include "main.hpp"
+#include <utility>
 
-using namespace std; 
+using namespace std;
 
 void sort4(int a[4]);
 int ifind(int *v, int n, int val);
 
-#endif /* utils_hpp */
+#endif

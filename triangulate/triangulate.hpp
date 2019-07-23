@@ -1,17 +1,29 @@
 //
-//  triangulation_class.hpp
-//  GBM
+//  triangulate.hpp
+//  triangulate
 //
-//  Created by Cedrick Ansorge on 11.07.19.
+//  Created by Cedrick Ansorge on 23.07.19.
 //  Copyright © 2019 Cedrick Ansorge. All rights reserved.
 //
 
-#ifndef triangulation_class_hpp
+#ifndef triangulate_h
+#define triangulate_h
 
-#include "main.hpp"
+#include <iostream>
+#include <stdio.h>
+#include <fstream>
+#include <sstream>
+#include <cstring>
+#include <sys/stat.h>
+#include <vector>
+#include <utility>
+#include <algorithm>
+
 #include "utils.hpp"
 
-using namespace std; 
+using namespace std;
+
+#define MAX_CHAR_LEN 512
 
 #define MAX_VRT_TTR 128
 #define MAX_VRT_TRI 128
@@ -67,7 +79,7 @@ public:
     // Constructors
     Triangulation();
     Triangulation(char *fname);
- 
+    
     void printGrid(int level);
     
     void printVertex(int i, int level);
@@ -79,7 +91,7 @@ public:
     VertexType *vrt;     // 0D Vertex Points
     std::vector<TriType>    tri;     // 2D Triangles (surfaces of Tetrahedrons)
     std::vector<EdgeType>   edg;    // 1D Edges of Tetrahedrons and Triangles
-
+    
     std::vector<TriType *>  hul;     // Exterior Surface of Triangulation
     // Members
     int nDim, nVrt, nEdg, nTri, nTtr, nHul;
@@ -93,6 +105,4 @@ private:
     
 };
 
-#define triangulation_class_hpp
-
-#endif /* triangulation_class_hpp */
+#endif // ifndef triangulate_h

@@ -1,11 +1,19 @@
 //
-//  triangulation_class.cpp
+//  triangulate.cpp
+//  triangulate
+//
+//  Created by Cedrick Ansorge on 23.07.19.
+//  Copyright © 2019 Cedrick Ansorge. All rights reserved.
+//
+
+//
+//  triangulate.cpp
 //  GBM
 //
 //  Created by Cedrick Ansorge on 11.07.19.
 //  Copyright © 2019 Cedrick Ansorge. All rights reserved.
 //
-#include "triangulation_class.hpp"
+#include "triangulate.hpp"
 
 Triangulation::Triangulation(){
     char fname[MAX_CHAR_LEN];
@@ -35,7 +43,7 @@ void Triangulation::read_mesh(char *fname){
     } else {
         cout << "Reading mesh from file \'" << &fname[0] << "\'\n";
     }
-
+    
     
     // READ VERTICES
     {
@@ -54,7 +62,7 @@ void Triangulation::read_mesh(char *fname){
         istringstream lss(line);
         lss >> nVrt;
     }
-  
+    
     cout << "Dimensions: " << nDim << '\n';
     cout << "Reading " << nVrt <<"Vertices \n";
     vrt = (VertexType *) malloc(nVrt*sizeof(VertexType));
@@ -118,7 +126,7 @@ void Triangulation::read_mesh(char *fname){
     // Fix Neighbors
     for ( int iTtr=0; iTtr<nTtr; ++iTtr ) {
         p_ttr=&ttr[iTtr];
-
+        
         for (int iAdj=0; iAdj < p_ttr->n_adjacent; iAdj++ )
         {
             int i_other = p_ttr->a[iAdj];
@@ -139,7 +147,7 @@ void Triangulation::read_mesh(char *fname){
             } else if ( nEdgCommon != 1 ) {
                 cout << "ERROR: Internal Error the number of common Edges among Tetrahedrons \n \
                 Must either be 1 or 3;\n       Found " << nEdgCommon;
-                 exit(EXIT_FAILURE);
+                exit(EXIT_FAILURE);
             }
         }
         if ( p_ttr-> n_neighbor <1 || p_ttr->n_neighbor > 4){
@@ -154,10 +162,10 @@ void Triangulation::read_mesh(char *fname){
         if ( tri[iTri].bdy == true )
         {
             hul.push_back( &tri[iTri] );
-          //  TODO : fix according properties of vertices, edges and tetrahedras
+            //  TODO : fix according properties of vertices, edges and tetrahedras
             nHul++;
         }
-
+    
     cout << "Calculated Hull\n";
     return;
 }
@@ -166,7 +174,7 @@ int Triangulation::add_tris(int it, TetraType *t){
     int inew=0,v[3];
     int com[4][3] = { {0,1,2}, {0,1,3}, {0,2,3}, {1,2,3}}; // 4 possible combinations of the three vertices
     int itri_loc;
-  
+    
     for ( int i=0; i<4; ++i){
         for (int d=0; d<3; ++d) v[d]=t->vrt[com[i][d]];
         itri_loc=is_triangle(v);
@@ -178,7 +186,7 @@ int Triangulation::add_tris(int it, TetraType *t){
             tri_loc.edg[0]=is_edge(v[0],v[1]);
             tri_loc.edg[1]=is_edge(v[0],v[2]);
             tri_loc.edg[2]=is_edge(v[1],v[2]);
-
+            
             for (int d=0; d<3; ++d) {
                 tri_loc.vrt[d]=v[d];         // add vertices
                 tri_loc.c[d]=0.;                     // calculate centre
@@ -235,12 +243,12 @@ int Triangulation::is_triangle(int v[3]){
     }
     return -1;
     
-  /*
-    for (int i=0; i<nTri; ++i)
-        if ( tri[i].vrt[0] == v[0] && tri[i].vrt[1] == v[1] && tri[i].vrt[2] == v[2] )
-            return(i);
-    return (-1);
-   */
+    /*
+     for (int i=0; i<nTri; ++i)
+     if ( tri[i].vrt[0] == v[0] && tri[i].vrt[1] == v[1] && tri[i].vrt[2] == v[2] )
+     return(i);
+     return (-1);
+     */
 }
 
 int Triangulation::add_edges(int it, TetraType *t){
@@ -254,7 +262,7 @@ int Triangulation::add_edges(int it, TetraType *t){
             v0=t->vrt[i0];
             v1=t->vrt[i1];
             if ( v0 > v1 ) swap(v0,v1);
-       
+            
             iEdg = is_edge(v0,v1);
             if ( iEdg >= 0 )      // Edge exists already; add information about Tetrahedron
             {
@@ -269,9 +277,9 @@ int Triangulation::add_edges(int it, TetraType *t){
                         t->a[t->n_adjacent]=iTtr_loc;
                         t->n_adjacent++;
                     }
-                   
+                    
                     t_other = &ttr[iTtr_loc];
-           
+                    
                     if ( ifind(t_other->a,t_other->n_adjacent,it) == t_other->n_adjacent ) {
                         if ( t_other->n_adjacent >= MAX_TTR_ADJ ) {
                             cout << "ERROR: Too many adjacent tetras (" << t_other->n_adjacent << ") on Tetra " << iTtr_loc;
@@ -310,7 +318,7 @@ int Triangulation::add_edges(int it, TetraType *t){
                     v->edg[v->nVrtEdg] = nEdg;
                     v->nVrtEdg++;
                 }
-               
+                
                 v=&vrt[v1];
                 if ( ifind(v->edg,v->nVrtEdg,nEdg) == v->nVrtEdg ){
                     if ( v->nVrtEdg >= MAX_VRT_EDG ) {
@@ -339,10 +347,10 @@ int Triangulation::is_edge(int v0, int v1){
 
 void Triangulation::printGrid(int level ){
     /* PARAMETER level:
-        0 - bulk grid information;
-        1 - basic connectivity;
-        2 - detailed connectivity   */
-
+     0 - bulk grid information;
+     1 - basic connectivity;
+     2 - detailed connectivity   */
+    
     if ( level >=0 ) cout << '\n' << nVrt << " VERTICES\n==============\n";
     if ( level > 0 ) for ( int i=0; i<nVrt; ++i) printVertex(i,level);
     
@@ -354,7 +362,7 @@ void Triangulation::printGrid(int level ){
     
     if ( level >=0 ) cout << nTtr <<" TETRAHEDRONS\n=================\n";
     if ( level > 0 ) for ( int i=0; i<nTtr; ++i) printTetrahedron(i,level);
-
+    
 }
 
 void Triangulation::printVertex(int iv, int level) {
@@ -396,7 +404,7 @@ void Triangulation::printTriangle(int i, int level) {
 
 void Triangulation::printTetrahedron(int i, int level){
     TetraType *t=&ttr[i];
-
+    
     cout << "Ttr " << i <<"(";
     for (int i2=0; i2<3; ++i2) cout << t->c[i2] << " ";
     cout <<") Vrt:";
@@ -413,4 +421,3 @@ void Triangulation::printTetrahedron(int i, int level){
     if ( level> 1 ) for ( int i2=0;i2<t->n_neighbor; ++i2) cout << t->n[i2] << ";";
     cout << "\n";
 }
-

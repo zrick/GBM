@@ -8,8 +8,6 @@
 
 #ifndef main_h
 
-#define MAX_CHAR_LEN 512
-
 #include <iostream>
 #include <stdio.h>
 #include <fstream>
@@ -21,6 +19,4 @@
 #include <algorithm>
 
 #define main_h
-
-
 #endif /* main_h */
