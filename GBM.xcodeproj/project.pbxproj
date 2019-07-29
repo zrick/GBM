@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		BA39195B22D7271500D8C20B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA39195A22D7271500D8C20B /* main.cpp */; };
+		BA5D839322EEF6390009447F /* libutils.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAC8829E22E7A72600EEC4A9 /* libutils.dylib */; };
 		BAC882A122E7A72600EEC4A9 /* utils.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BAC882A022E7A72600EEC4A9 /* utils.hpp */; };
 		BAC882A522E7A72600EEC4A9 /* utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAC882A422E7A72600EEC4A9 /* utils.cpp */; };
 		BAC882A922E7A7A600EEC4A9 /* libutils.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAC8829E22E7A72600EEC4A9 /* libutils.dylib */; };
@@ -15,11 +16,28 @@
 		BAC882AC22E7AB0200EEC4A9 /* triangulate.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAFF212922E79D8F0052E39E /* triangulate.cpp */; };
 		BAC882AD22E7AB0A00EEC4A9 /* triangulate.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BAFF212522E79D8F0052E39E /* triangulate.hpp */; };
 		BAC882AE22E7AB7200EEC4A9 /* libutils.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAC8829E22E7A72600EEC4A9 /* libutils.dylib */; };
-		BAD585C622E798F6009DAFA5 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAD585C522E798F6009DAFA5 /* main.cpp */; };
+		BAD585C622E798F6009DAFA5 /* vlinear.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAD585C522E798F6009DAFA5 /* vlinear.cpp */; };
 		BAFF211422E799D20052E39E /* linear.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BAFF211322E799D20052E39E /* linear.hpp */; };
 		BAFF211822E799D20052E39E /* linear.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAFF211722E799D20052E39E /* linear.cpp */; };
 		BAFF211D22E79C680052E39E /* liblinear.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAFF211122E799D10052E39E /* liblinear.dylib */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BA5D839522EEFB270009447F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BA39194F22D7271500D8C20B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BAFF211022E799D10052E39E;
+			remoteInfo = linear;
+		};
+		BA5D839722EEFB2B0009447F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BA39194F22D7271500D8C20B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BAC8829D22E7A72600EEC4A9;
+			remoteInfo = utils;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		BA39195522D7271500D8C20B /* CopyFiles */ = {
@@ -46,11 +64,12 @@
 		BA39195722D7271500D8C20B /* GBM */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GBM; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA39195A22D7271500D8C20B /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		BA39196422D735D800D8C20B /* main.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = main.hpp; sourceTree = "<group>"; };
+		BA5D839422EEF91D0009447F /* vlinear.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = vlinear.hpp; sourceTree = "<group>"; };
 		BAC8829E22E7A72600EEC4A9 /* libutils.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libutils.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAC882A022E7A72600EEC4A9 /* utils.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = utils.hpp; sourceTree = "<group>"; };
 		BAC882A422E7A72600EEC4A9 /* utils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = utils.cpp; sourceTree = "<group>"; };
 		BAD585C322E798F6009DAFA5 /* vlinear */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vlinear; sourceTree = BUILT_PRODUCTS_DIR; };
-		BAD585C522E798F6009DAFA5 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		BAD585C522E798F6009DAFA5 /* vlinear.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vlinear.cpp; sourceTree = "<group>"; };
 		BAE2A7FE22E7A195001A8F41 /* libtriangulate.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libtriangulate.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAFF211122E799D10052E39E /* liblinear.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liblinear.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAFF211322E799D20052E39E /* linear.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = linear.hpp; sourceTree = "<group>"; };
@@ -80,6 +99,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA5D839322EEF6390009447F /* libutils.dylib in Frameworks */,
 				BAFF211D22E79C680052E39E /* liblinear.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -148,7 +168,8 @@
 		BAD585C422E798F6009DAFA5 /* vlinear */ = {
 			isa = PBXGroup;
 			children = (
-				BAD585C522E798F6009DAFA5 /* main.cpp */,
+				BAD585C522E798F6009DAFA5 /* vlinear.cpp */,
+				BA5D839422EEF91D0009447F /* vlinear.hpp */,
 			);
 			path = vlinear;
 			sourceTree = "<group>";
@@ -253,6 +274,8 @@
 			buildRules = (
 			);
 			dependencies = (
+				BA5D839822EEFB2B0009447F /* PBXTargetDependency */,
+				BA5D839622EEFB270009447F /* PBXTargetDependency */,
 			);
 			name = vlinear;
 			productName = vlinear;
@@ -361,7 +384,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BAD585C622E798F6009DAFA5 /* main.cpp in Sources */,
+				BAD585C622E798F6009DAFA5 /* vlinear.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -382,6 +405,19 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		BA5D839622EEFB270009447F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BAFF211022E799D10052E39E /* linear */;
+			targetProxy = BA5D839522EEFB270009447F /* PBXContainerItemProxy */;
+		};
+		BA5D839822EEFB2B0009447F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BAC8829D22E7A72600EEC4A9 /* utils */;
+			targetProxy = BA5D839722EEFB2B0009447F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		BA39195C22D7271500D8C20B /* Debug */ = {

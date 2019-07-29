@@ -31,3 +31,10 @@ int ifind(int *v, int n, int val)
         if ( v[i] == val ) return(i);
     return n;
 }
+
+uint64_t current_time() {
+    using namespace std::chrono;
+    return duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
+   // return duration_cast<microseconds>(high_resolution_clock::now()).count();
+}
+
