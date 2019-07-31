@@ -20,7 +20,7 @@ int main(int argc, const char * argv[]) {
     a=nullptr; b=nullptr; c=nullptr; d=nullptr;
     lhs=nullptr; rhs=nullptr;
     
-    n=10;
+    n=100;
     n_block=int(n/2);
     
     cout << "ALLOCATING AND INITIALIZING ARRAYS\n";

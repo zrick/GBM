@@ -12,7 +12,7 @@
 
 using namespace std;
 
-int qrdcmp(double **a,int n,int np,double *c,double *d){
+int qrdcmp(double **a,const int n,const int np,double *c,double *d){
     int i,j,k,sgn;
     double sum,scale,sigma,tau;
     int sing=0 ;
@@ -107,7 +107,7 @@ void crs3(double a[3], double b[3], double *c)
 }
 
 double dot3(double a[3], double b[3]){
-    return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+    return (a[0]*b[0] + a[1]*b[1] + a[2]*b[2]);
 }
 
 void renorm3(double *v)

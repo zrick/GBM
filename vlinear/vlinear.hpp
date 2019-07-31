@@ -15,5 +15,5 @@
 
 #include "utils.hpp"
 #include "linear.hpp"
-
+#include "constants.h"
 #endif /* vlinear_h */

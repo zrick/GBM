@@ -31,19 +31,16 @@ Triangulation::Triangulation(char *fname){
 void Triangulation::read_mesh(char *fname){
     // LOCAL DECLARATIONS
     int iLine=0,nEdgCommon;
-    struct stat buffer;
     string line;
-    ifstream tfile(fname);
     VertexType *p_vrt;
     TetraType *p_ttr;
+    TriType *p_tri;
     
     // check if file exists
-    if ( stat (fname, &buffer) != 0) {
-        cout<<"Error: file \'" << &fname[0] << "\' not found \n";
-    } else {
+    if ( file_exist(fname) )
         cout << "Reading mesh from file \'" << &fname[0] << "\'\n";
-    }
     
+    ifstream tfile(fname);
     
     // READ VERTICES
     {
@@ -68,6 +65,7 @@ void Triangulation::read_mesh(char *fname){
     vrt = (VertexType *) malloc(nVrt*sizeof(VertexType));
     for ( int iVrt=0; iVrt<nVrt; ++iVrt) {
         p_vrt=&vrt[iVrt];
+        p_vrt->idx=iVrt;
         getline(tfile,line);
         istringstream lss(line);
         p_vrt->nVrtEdg=0;
@@ -79,7 +77,6 @@ void Triangulation::read_mesh(char *fname){
         p_vrt->nVrtTtr=0;
     }
     
-    cout << "Processed Vertices\n";
     // READ TETRAHEDRONS
     {
         getline(tfile,line); iLine++;
@@ -90,13 +87,13 @@ void Triangulation::read_mesh(char *fname){
     cout << "Reading " << nTtr << "Tetrahedrons" << '\n';
     ttr = (TetraType *) malloc (nTtr * sizeof(TetraType));
     
-    
     for ( int iTtr=0; iTtr<nTtr; ++iTtr) {
         p_ttr=&ttr[iTtr];
         getline(tfile,line);
         istringstream lss(line);
         lss >> p_ttr->vrt[0] >> p_ttr->vrt[1] >> p_ttr->vrt[2] >> p_ttr->vrt[3];
         sort4(p_ttr->vrt);
+        p_ttr->idx=iTtr;
         p_ttr->n_adjacent=0;
         p_ttr->n_neighbor=0;
         
@@ -122,8 +119,9 @@ void Triangulation::read_mesh(char *fname){
         add_tris(iTtr,p_ttr);   // update list of triangles
         
     }
-    cout << "Processed Tetrahedrons \n";
+    
     // Fix Neighbors
+    cout << "Fixing Neighbors \n";
     for ( int iTtr=0; iTtr<nTtr; ++iTtr ) {
         p_ttr=&ttr[iTtr];
         
@@ -132,7 +130,7 @@ void Triangulation::read_mesh(char *fname){
             int i_other = p_ttr->a[iAdj];
             nEdgCommon=0;
             for ( int iEdg=0; iEdg<6; ++ iEdg)   // count all common edges
-                if ( ifind(ttr[i_other].edg,6,p_ttr->edg[iEdg]) != 6 )
+                if ( afind(ttr[i_other].edg,6,p_ttr->edg[iEdg]) != 6 )
                     nEdgCommon++;
             
             if ( nEdgCommon == 3) {
@@ -154,19 +152,26 @@ void Triangulation::read_mesh(char *fname){
             cout << "ERROR: Internal Error the number of neighbors for a Tetrahedron must be 2,3, or 4; found " << p_ttr->n_neighbor << "\n";
         }
     }
-    
-    cout << "Fixed Neighbors\n";
-    
+ 
     // Construct Hull; fix boudary property of vertices, edges, and terahedras
     for ( int iTri=0; iTri<nTri; ++iTri)
         if ( tri[iTri].bdy == true )
         {
-            hul.push_back( &tri[iTri] );
-            //  TODO : fix according properties of vertices, edges and tetrahedras
+            p_tri=&tri[iTri];
+            hul.push_back( p_tri );
+            for (int d=0; d<3; ++d) {
+                edg[p_tri->edg[d]].bdy=true;
+                vrt[p_tri->vrt[d]].bdy=true;
+            }
+            ttr[p_tri->ttr[0]].bdy=true;
+            if ( p_tri->ttr[1] > 0 ) {
+                cout << "ERROR: inconsistent boundary property on Triangle" << iTri << " (" << p_tri->vrt[0] <<"-" <<p_tri->vrt[1] << "-" << p_tri->vrt[2] <<'\n';
+                exit(EXIT_FAILURE);
+            }
             nHul++;
         }
     
-    cout << "Calculated Hull\n";
+    cout << "Calculated Hull; contains " << nHul << " triangles. \n";
     return;
 }
 
@@ -181,14 +186,14 @@ int Triangulation::add_tris(int it, TetraType *t){
         
         if ( itri_loc < 0) { // Triangle needs to be added
             TriType tri_loc;
-            
+            tri_loc.idx=nTri;
             itri_loc=nTri;
             tri_loc.edg[0]=is_edge(v[0],v[1]);
             tri_loc.edg[1]=is_edge(v[0],v[2]);
             tri_loc.edg[2]=is_edge(v[1],v[2]);
             
             for (int d=0; d<3; ++d) {
-                tri_loc.vrt[d]=v[d];         // add vertices
+                tri_loc.vrt[d]=v[d];                 // add vertices
                 tri_loc.c[d]=0.;                     // calculate centre
                 for(int dd=0;dd<3;++dd)
                     tri_loc.c[d] += vrt[v[dd]].p[d] /3.;
@@ -205,6 +210,8 @@ int Triangulation::add_tris(int it, TetraType *t){
             }
             
             tri_loc.ttr[0]=it;
+            construct_normal(t,tri_loc,0);
+            
             tri_loc.ttr[1]=-1;
             tri_loc.bdy=true;
             tri.push_back(tri_loc);
@@ -213,6 +220,7 @@ int Triangulation::add_tris(int it, TetraType *t){
             inew++;
         }else{
             tri[itri_loc].ttr[1]=it;
+            construct_normal(t,tri[itri_loc],1);
             tri[itri_loc].bdy=false;
         }
         
@@ -243,12 +251,6 @@ int Triangulation::is_triangle(int v[3]){
     }
     return -1;
     
-    /*
-     for (int i=0; i<nTri; ++i)
-     if ( tri[i].vrt[0] == v[0] && tri[i].vrt[1] == v[1] && tri[i].vrt[2] == v[2] )
-     return(i);
-     return (-1);
-     */
 }
 
 int Triangulation::add_edges(int it, TetraType *t){
@@ -269,7 +271,7 @@ int Triangulation::add_edges(int it, TetraType *t){
                 // recover other tetrahedrons from edge properties and tell them we are adjacent
                 for ( int it_loc=0; it_loc<edg[iEdg].nEdgTtr; ++it_loc) {
                     iTtr_loc=edg[iEdg].ttr[it_loc];
-                    if (ifind(t->a,t->n_adjacent,iTtr_loc) == t->n_adjacent) {
+                    if (afind(t->a,t->n_adjacent,iTtr_loc) == t->n_adjacent) {
                         if ( t->n_adjacent >= MAX_TTR_ADJ ) {
                             cout << "ERROR: Too many adjacent tetras (" << t->n_adjacent << ") on Tetra " << iTtr_loc;
                             exit(EXIT_FAILURE);
@@ -280,7 +282,7 @@ int Triangulation::add_edges(int it, TetraType *t){
                     
                     t_other = &ttr[iTtr_loc];
                     
-                    if ( ifind(t_other->a,t_other->n_adjacent,it) == t_other->n_adjacent ) {
+                    if ( afind(t_other->a,t_other->n_adjacent,it) == t_other->n_adjacent ) {
                         if ( t_other->n_adjacent >= MAX_TTR_ADJ ) {
                             cout << "ERROR: Too many adjacent tetras (" << t_other->n_adjacent << ") on Tetra " << iTtr_loc;
                             exit(EXIT_FAILURE);
@@ -300,7 +302,7 @@ int Triangulation::add_edges(int it, TetraType *t){
             else                 // Edge does not exist yet; needs to be created
             {
                 EdgeType edg_loc;
-                
+                edg_loc.idx=nEdg;
                 edg_loc.vrt[0]=v0;
                 edg_loc.vrt[1]=v1;
                 edg_loc.ttr[0]=it;
@@ -310,7 +312,7 @@ int Triangulation::add_edges(int it, TetraType *t){
                 t->edg[iEdg_loc]=nEdg;
                 
                 v=&vrt[v0];
-                if ( ifind(v->edg,v->nVrtEdg,nEdg) == v->nVrtEdg) {
+                if ( afind(v->edg,v->nVrtEdg,nEdg) == v->nVrtEdg) {
                     if ( v->nVrtEdg >= MAX_VRT_EDG ) {
                         cout << "ERROR: Too many Edges (" << v->nVrtEdg << ") on Vertex " << v0 << '\n';
                         exit(EXIT_FAILURE);
@@ -320,7 +322,7 @@ int Triangulation::add_edges(int it, TetraType *t){
                 }
                 
                 v=&vrt[v1];
-                if ( ifind(v->edg,v->nVrtEdg,nEdg) == v->nVrtEdg ){
+                if ( afind(v->edg,v->nVrtEdg,nEdg) == v->nVrtEdg ){
                     if ( v->nVrtEdg >= MAX_VRT_EDG ) {
                         cout << "ERROR: Too many Edges (" << v->nVrtEdg << ") on Vertex " << v1 << '\n';
                         exit(EXIT_FAILURE);
@@ -345,55 +347,152 @@ int Triangulation::is_edge(int v0, int v1){
     return ( -1 );
 }
 
-void Triangulation::printGrid(int level ){
+void Triangulation::writeGrid(int format){
     /* PARAMETER level:
      0 - bulk grid information;
      1 - basic connectivity;
-     2 - detailed connectivity   */
+     2 - detailed connectivity
+     3 - VTK XML file*/
     
-    if ( level >=0 ) cout << '\n' << nVrt << " VERTICES\n==============\n";
-    if ( level > 0 ) for ( int i=0; i<nVrt; ++i) printVertex(i,level);
+    char gname[MAX_CHAR_LEN] = "/Users/zrick/WORK/research_projects/GBM/grid.vtu.xml";
+    double *data;
+    int *idata;
+    int iv,it,d;
     
-    if ( level >=0 )cout << nEdg << " EDGES\n==============\n";
-    if ( level > 0 ) for ( int i=0; i<nEdg; ++i) printEdge(i,level);
+    if ( format <= FMT_ASC_FULL ) { // ASCII OUTPUT
+        if ( format >=FMT_ASC_BASIC ) cout << '\n' << nVrt << " VERTICES\n==============\n";
+        if ( format > FMT_ASC_BASIC ) for ( int i=0; i<nVrt; ++i) printVertex(&vrt[i],format);
     
-    if ( level >=0 ) cout << nTri << " TRIANGLES\n=================\n";
-    if ( level > 0 ) for ( int i=0; i<nTri; ++i) printTriangle(i,level);
+        if ( format >=FMT_ASC_BASIC )cout << nEdg << " EDGES\n==============\n";
+        if ( format > FMT_ASC_BASIC ) for ( int i=0; i<nEdg; ++i) printEdge(&edg[i],format);
     
-    if ( level >=0 ) cout << nTtr <<" TETRAHEDRONS\n=================\n";
-    if ( level > 0 ) for ( int i=0; i<nTtr; ++i) printTetrahedron(i,level);
+        if ( format >=FMT_ASC_BASIC ) cout << nTri << " TRIANGLES\n=================\n";
+        if ( format > FMT_ASC_BASIC ) for ( int i=0; i<nTri; ++i) printTriangle(&tri[i],format);
     
+        if ( format >=FMT_ASC_BASIC ) cout << nTtr <<" TETRAHEDRONS\n=================\n";
+        if ( format > FMT_ASC_BASIC ) for ( int i=0; i<nTtr; ++i) printTetrahedron(&ttr[i],format);
+    }
+    else if ( format == FMT_XML_VTK ) { // VTK XML FILE
+        vector<string> att;
+        ofstream gfile;
+        string gname_str(gname);
+       
+        vtkXMLFileOpen(gname_str,nVrt,nTtr,gfile);
+
+        // GRID INFORMATION -- VERTICES
+        gfile << "<Points>\n";
+        // <DataArray type="Float32" NumberOfComponents="3" format="ascii">
+        att.push_back("type");              att.push_back("Float32");
+        att.push_back("NumberOfComponents");att.push_back("3");
+        att.push_back("fomat");             att.push_back("ascii");
+        data=(double*)malloc(3*nVrt*sizeof(double));
+        for (iv=0;iv<nVrt;++iv)
+            for (d=0;d<3;++d)
+                data[3*iv+d]=vrt[iv].p[d];
+        vtkXMLWriteDataArray(gfile, att, 3*nVrt, data);
+        gfile << "</Points>\n";
+
+        att.clear();
+        
+        gfile << "<Cells>\n";
+        idata=(int*)malloc(nTtr*4*sizeof(int));
+        
+        // <DataArray type="Int32" Name="connectivity" format="ascii">
+        att.push_back("type");  att.push_back("Int32");
+        att.push_back("Name");  att.push_back("connectivity");
+        att.push_back("format");att.push_back("ascii");
+        for (it=0; it<nTtr; ++it)
+            for (d=0;d<4;++d)
+                idata[4*it+d] = ttr[it].vrt[d];
+        vtkXMLWriteDataArray(gfile, att, 4*nTtr, idata);
+        att.clear();
+        
+        // <DataArray type="UInt8" Name="types" format="ascii">
+        att.push_back("type");  att.push_back("UInt8");
+        att.push_back("Name");  att.push_back("types");
+        att.push_back("format");att.push_back("ascii");
+        for (it=0; it<nTtr; ++it)
+            idata[it] =10;
+        vtkXMLWriteDataArray(gfile, att, nTtr, idata);
+        att.clear();
+        
+        // <DataArray type="Int32" Name="offsets" format="ascii">
+        att.push_back("type"); att.push_back("Int32");
+        att.push_back("Name"); att.push_back("offsets");
+        att.push_back("format");att.push_back("ascii");
+        for (it=0; it<nTtr; ++it)
+            idata[it] =(it+1)*4;
+        vtkXMLWriteDataArray(gfile, att, nTtr, idata);
+        att.clear();
+        
+        gfile << "</Cells>\n";
+        
+        
+        gfile << "<PointData>\n";
+        //DataArray type="Float32" Name="scalars" format="ascii
+        att.push_back("type");  att.push_back("Int32");
+        att.push_back("Name");  att.push_back("Atlas_Region");
+        att.push_back("format");att.push_back("ascii");
+        for(iv=0; iv<nVrt;++iv )
+        {
+            idata[iv]    =vrt[iv].atl;
+            data[iv]     =vrt[iv].dia;
+            data[nVrt+iv]=vrt[iv].vol;
+        }
+        vtkXMLWriteDataArray(gfile,att,nVrt,idata);
+        att[1]=string("Float32");
+        att[3]=string("Atlas_Diameter");
+        vtkXMLWriteDataArray(gfile,att,nVrt,data);
+        att[3]=string("Atlas_Volume");
+        vtkXMLWriteDataArray(gfile, att, nVrt, &data[nVrt]);
+        att.clear();
+        gfile << "</PointData>\n";
+        
+        free(idata);
+        free(data);
+        // FOOTER of VTK XML FILE
+        vtkXMLFileClose(gfile);
+    }
 }
 
-void Triangulation::printVertex(int iv, int level) {
-    VertexType *v=&vrt[iv];
+void Triangulation::printHull(int level){
+    if ( level > FMT_ASC_BASIC ) for ( int i=0; i<nVrt; ++i) if ( vrt[i].bdy ) printVertex(&vrt[i],level);
     
-    cout << "Vrt " << iv << "(";
-    if (level >0 ) for (int i2=0; i2<3; ++i2) cout << v->p[i2] <<";";
+    if ( level >=FMT_ASC_BASIC )cout << " EDGES ON HULL\n==============\n";
+    if ( level > FMT_ASC_BASIC ) for ( int i=0; i<nEdg; ++i) if ( edg[i].bdy ) printEdge(&edg[i],level);
+    
+    if ( level >=FMT_ASC_BASIC ) cout << " TRIANGLES ON HULL\n=================\n";
+    if ( level > FMT_ASC_BASIC ) for ( int i=0; i<nTri; ++i) if ( tri[i].bdy ) printTriangle(&tri[i],level);
+    
+    if ( level >=FMT_ASC_BASIC ) cout <<" TETRAHEDRONS ON HULL\n=================\n";
+    if ( level > FMT_ASC_BASIC ) for ( int i=0; i<nTtr; ++i) if ( ttr[i].bdy ) printTetrahedron(&ttr[i],level);
+}
+
+void Triangulation::printVertex(VertexType *v, int level) {
+    
+    cout << "Vrt " << v->idx << (v->bdy == true? 'H' : 'I') << "(";
+    if (level>FMT_ASC_BASIC) for (int i2=0; i2<3; ++i2) cout << v->p[i2] <<";";
     cout <<  "):" << v->nVrtEdg << "Edg: " ;
-    if ( level>1) for (int i2=0; i2<v->nVrtEdg; ++i2) cout << v->edg[i2] <<";";
+    if (level>FMT_ASC_EXT) for (int i2=0; i2<v->nVrtEdg; ++i2) cout << v->edg[i2] <<";";
     cout << v->nVrtTri << "Tri: ";
-    if (level>1)  for (int i2=0; i2<v->nVrtTri; ++i2) cout << v->tri[i2] <<";";
+    if (level>FMT_ASC_EXT)  for (int i2=0; i2<v->nVrtTri; ++i2) cout << v->tri[i2] <<";";
     cout << v->nVrtTtr << "Ttr: ";
-    if ( level>1) for (int i2=0; i2<v->nVrtTtr; ++i2) cout << v->ttr[i2] <<";";
+    if ( level>FMT_ASC_EXT) for (int i2=0; i2<v->nVrtTtr; ++i2) cout << v->ttr[i2] <<";";
     cout << "\n" ;
 }
-void Triangulation::printEdge(int i, int level) {
-    EdgeType *e=&edg[i];
-    
-    cout << "Edg " << i <<"("<< e->vrt[0] << '-' <<  e->vrt[1] << "):"<<  e->nEdgTri << "Tri: ";
-    if ( level > 1 ) for    (int n=0; n<e->nEdgTri;   ++n) cout << e->tri[n] << " ";
-    cout << ";  " << edg[i].nEdgTtr << "Ttr: " ;
-    if ( level > 1 ) for    (int n=0; n<e->nEdgTtr; ++n) cout << e->ttr[n] << " ";
+void Triangulation::printEdge(EdgeType *e, int level) {
+    cout << "Edg " << e->idx << (e->bdy == true? 'H' : 'I')<<"("<< e->vrt[0] << '-' <<  e->vrt[1] << ")"  <<":"<<  e->nEdgTri << "Tri: ";
+    if ( level > FMT_ASC_EXT ) for    (int n=0; n<e->nEdgTri;   ++n) cout << e->tri[n] << " ";
+    cout << ";  " << e->nEdgTtr << "Ttr: " ;
+    if ( level > FMT_ASC_EXT ) for    (int n=0; n<e->nEdgTtr; ++n) cout << e->ttr[n] << " ";
     cout << "\n";
 }
 
-void Triangulation::printTriangle(int i, int level) {
-    TriType*t=&tri[i];
+void Triangulation::printTriangle(TriType *t, int level) {
     
-    cout <<"Tri " << i <<":(";
-    if ( level >0 ) for ( int d=0; d<3; ++d ) cout << t->vrt[d] << ( d<2? "-" : ")"  );
-    if ( level >1 ) {
+    cout <<"Tri " << t->idx << (t->bdy == true? 'H' : 'I') <<":(";
+    if ( level >FMT_ASC_BASIC ) for ( int d=0; d<3; ++d ) cout << t->vrt[d] << ( d<2? "-" : ")"  );
+    if ( level >FMT_ASC_EXT ) {
         cout << " Edg: ";
         for ( int d=0; d<3; ++d ) cout << t->edg[d] << ";";
         cout << " Ttr: ";
@@ -402,22 +501,96 @@ void Triangulation::printTriangle(int i, int level) {
     cout << '\n';
 }
 
-void Triangulation::printTetrahedron(int i, int level){
-    TetraType *t=&ttr[i];
-    
-    cout << "Ttr " << i <<"(";
+void Triangulation::printTetrahedron(TetraType *t, int level){
+    cout << "Ttr " << t->idx << (t->bdy == true? 'H' : 'I') << "(";
     for (int i2=0; i2<3; ++i2) cout << t->c[i2] << " ";
     cout <<") Vrt:";
     for (int i2=0; i2<4; ++i2) cout << t->vrt[i2] << ";";
-    if ( level > 1 ) {
+    if ( level > FMT_ASC_EXT) {
         cout << "Edg: ";
-        if ( level> 1 ) for (int i2=0; i2<6; ++i2) cout << t->edg[i2] << ";";
+        if ( level>FMT_ASC_EXT ) for (int i2=0; i2<6; ++i2) cout << t->edg[i2] << ";";
         cout << "Tri: ";
-        if ( level> 1 ) for (int i2=0; i2<4; ++i2) cout << t->tri[i2] << ";";
+        if ( level>FMT_ASC_EXT ) for (int i2=0; i2<4; ++i2) cout << t->tri[i2] << ";";
     }
     cout << "(" << t->n_adjacent << " Adj): ";
-    if ( level> 1 ) for ( int i2=0;i2<t->n_adjacent; ++i2) cout << t->a[i2] << ";";
+    if ( level>FMT_ASC_EXT ) for ( int i2=0;i2<t->n_adjacent; ++i2) cout << t->a[i2] << ";";
     cout << "(" << t->n_neighbor << " Ngh): ";
-    if ( level> 1 ) for ( int i2=0;i2<t->n_neighbor; ++i2) cout << t->n[i2] << ";";
+    if ( level>FMT_ASC_EXT ) for ( int i2=0;i2<t->n_neighbor; ++i2) cout << t->n[i2] << ";";
     cout << "\n";
+}
+
+void Triangulation::construct_normal(TetraType *t, TriType tri_loc,int ittr_loc){
+    // construct outer normal of triangle with respect to tetrahedron t;
+    VertexType *p_vrt0, *p_vrt1;
+    double e_vec[3][3];
+    
+    for (int d=0; d<3; ++d )
+    {
+        p_vrt0 = &vrt[tri_loc.vrt[0]];
+        p_vrt1 = &vrt[tri_loc.vrt[1]];
+        e_vec[0][d]=p_vrt1->p[d] -p_vrt0->p[d];   // edge 0-1
+        p_vrt1 = &vrt[tri_loc.vrt[2]];
+        e_vec[1][d]=p_vrt1->p[d] -p_vrt0->p[d];   // edge 0-2
+        e_vec[2][d]=tri_loc.c[d] - t->c[d];       // centroid triangle -- centroid tetrahedron
+    }
+    crs3(e_vec[0],e_vec[1],tri_loc.n[ittr_loc]);
+    renorm3(tri_loc.n[ittr_loc]);
+    renorm3(e_vec[2]);
+    if ( dot3(tri_loc.n[ittr_loc],e_vec[2]) < 0. )  // turn around if inner normal
+        for (int d=0;d<3;++d)
+            tri_loc.n[ittr_loc][d]=-tri_loc.n[ittr_loc][d];
+}
+
+
+bool Triangulation::hasAtlas(){ return atlas.size() > 0? true : false; }
+
+void Triangulation::setAtlas(string fname){
+    int iLine=0, iatl,ivrt;
+    string line,dstr;
+    ifstream fs;
+    if ( file_exist(fname) )
+        cout << "Setting Atlas from file " << fname << '\n';
+    
+    fs=ifstream(fname);
+    // First, get region names
+
+    atlas.push_back(fname);
+    while ( getline(fs,line) ) {
+        iLine++;
+        vector<string> line_split;
+        string_split(line, line_split,',');
+        
+        if ( iLine > nVrt ) {
+            cout << "WARNING: Atlas of size " << atlas.size() << " contains line " << iLine << "; need " << nVrt << '\n';
+            continue;
+        }
+        
+        if ( find(atlas,line_split[1]) == atlas.size() )
+            atlas.push_back(line_split[1]);
+    }
+    
+    // Now, iterate over the file again and save label for each node
+    fs.clear();  // clear ifstream in case, we have reached EOF
+    fs.seekg(0,ios::beg);
+    iLine=0;
+    while ( getline(fs,line) ) {
+        iLine++;
+        
+        if ( iLine > nVrt ) continue;
+        
+        vector<string> line_split;
+        string_split(line,line_split,',');
+        if ( (iatl = find(atlas,line_split[1])) == atlas.size() ) {
+            cout << "ERROR: Atlas type " << line_split[1] << "not found in atlas of size " << atlas.size() << '\n';
+        } else {
+            ivrt=atoi(line_split[0].c_str())-1;  // numbering in Atlas is 1-based;
+            vrt[ivrt].atl=iatl;
+            vrt[ivrt].dia=(double)atof(line_split[3].c_str());
+            vrt[ivrt].vol=(double)atof(line_split[2].c_str())/1000.;
+        }
+    }
+    
+    if (iLine < nVrt)
+        cout << "ERROR: Atlas of size " << atlas.size() << " only contains " << iLine << "nodes; need" << nVrt << '\n';
+    return;
 }

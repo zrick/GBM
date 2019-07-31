@@ -13,10 +13,13 @@
 #include <fstream>
 #include <sstream>
 #include <cstring>
-#include <sys/stat.h>
 #include <vector>
 #include <utility>
 #include <algorithm>
+
+#include "utils.hpp"
+#include "triangulate.hpp"
+#include "constants.h"
 
 #define main_h
 #endif /* main_h */

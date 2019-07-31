@@ -9,15 +9,30 @@
 #ifndef utils_
 #define utils_
 
-#include <stdio.h>
-#include <utility>
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <iostream>
+#include <iterator>
+#include <sstream>
+#include <string>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <utility>
+#include <vector>
+
+#include "constants.h"
 
 using namespace std;
 
-void sort4(int a[4]);
-int ifind(int *v, int n, int val);
+template<class T>int afind(T *v, int n, T val);
+template<class T>int find(vector<T> vec,T val);
+template<class T>void sort4(T a[4]);
+
 uint64_t current_time();
+bool file_exist(char *fc);
+bool file_exist(string &fs);
+
+void string_split(std::string &str, vector<string> &cont, char delim=' ');
+
 #endif
