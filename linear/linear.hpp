@@ -18,5 +18,7 @@ void rsolv(double **a,const int n,const int np,double *d,double *b);
 void crs3(double a[3], double b[3], double *c);
 void renorm3(double *v);
 double dot3(double a[3], double b[3]);
+double dist3(double a[3], double b[3]);
+double tetraVolume(double a[3], double b[3], double c[3], double d[3]); 
 
 #endif

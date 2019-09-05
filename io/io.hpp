@@ -14,6 +14,7 @@
 #include <vector>
 #include <cstring>
 #include "constants.h"
+#include "utils.hpp"
 
 /* The classes below are exported */
 #pragma GCC visibility push(default)
@@ -26,6 +27,35 @@ public:
     Attribute(string val, string typ);
     
     string val,typ;
+};
+
+class Group{
+public:
+    //Constructors
+    Group(string &s);
+private:
+    // Functions
+    // Members
+    string name; 
+};
+
+
+class Namelist{
+    
+public:
+    // Constructors
+    Namelist();
+    Namelist(char *fname);
+    Namelist(const char fname[]);
+    
+private:
+    //Functions
+    void read_namelist(string s);
+    
+    // Members
+    std::vector<Group> grp;
+    std::vector<string>grpNames; 
+    
 };
 
 template<typename T> // explicit instantiation to types <double, int> in io.cpp

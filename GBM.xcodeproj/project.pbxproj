@@ -19,6 +19,8 @@
 		BA5D83A622F051350009447F /* io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA5D83A522F051350009447F /* io.cpp */; };
 		BA5D83AA22F052120009447F /* libio.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BA5D839F22F051350009447F /* libio.dylib */; };
 		BA5D83AB22F0538C0009447F /* libio.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BA5D839F22F051350009447F /* libio.dylib */; };
+		BA9911022304A1AD00B654CB /* namelist.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA9911002304A1AD00B654CB /* namelist.cpp */; };
+		BA9911042304A4BD00B654CB /* libutils.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAC8829E22E7A72600EEC4A9 /* libutils.dylib */; };
 		BAC882A122E7A72600EEC4A9 /* utils.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BAC882A022E7A72600EEC4A9 /* utils.hpp */; };
 		BAC882A522E7A72600EEC4A9 /* utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAC882A422E7A72600EEC4A9 /* utils.cpp */; };
 		BAC882A922E7A7A600EEC4A9 /* libutils.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAC8829E22E7A72600EEC4A9 /* libutils.dylib */; };
@@ -27,6 +29,14 @@
 		BAC882AD22E7AB0A00EEC4A9 /* triangulate.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BAFF212522E79D8F0052E39E /* triangulate.hpp */; };
 		BAC882AE22E7AB7200EEC4A9 /* libutils.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAC8829E22E7A72600EEC4A9 /* libutils.dylib */; };
 		BAD585C622E798F6009DAFA5 /* vlinear.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAD585C522E798F6009DAFA5 /* vlinear.cpp */; };
+		BAFC34E322F43C54003B72FC /* errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAFC34E122F43C54003B72FC /* errors.cpp */; };
+		BAFC34E422F43C54003B72FC /* errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAFC34E122F43C54003B72FC /* errors.cpp */; };
+		BAFC34E522F43C54003B72FC /* errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAFC34E122F43C54003B72FC /* errors.cpp */; };
+		BAFC34E622F43C54003B72FC /* errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAFC34E122F43C54003B72FC /* errors.cpp */; };
+		BAFC34E722F43C54003B72FC /* errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAFC34E122F43C54003B72FC /* errors.cpp */; };
+		BAFC34E822F43C54003B72FC /* errors.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BAFC34E222F43C54003B72FC /* errors.hpp */; };
+		BAFC34E922F43C54003B72FC /* errors.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BAFC34E222F43C54003B72FC /* errors.hpp */; };
+		BAFC34EA22F43C54003B72FC /* errors.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BAFC34E222F43C54003B72FC /* errors.hpp */; };
 		BAFF211422E799D20052E39E /* linear.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BAFF211322E799D20052E39E /* linear.hpp */; };
 		BAFF211822E799D20052E39E /* linear.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BAFF211722E799D20052E39E /* linear.cpp */; };
 		BAFF211D22E79C680052E39E /* liblinear.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAFF211122E799D10052E39E /* liblinear.dylib */; };
@@ -80,12 +90,15 @@
 		BA5D839F22F051350009447F /* libio.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libio.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA5D83A122F051350009447F /* io.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = io.hpp; sourceTree = "<group>"; };
 		BA5D83A522F051350009447F /* io.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = io.cpp; sourceTree = "<group>"; };
+		BA9911002304A1AD00B654CB /* namelist.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = namelist.cpp; sourceTree = "<group>"; };
 		BAC8829E22E7A72600EEC4A9 /* libutils.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libutils.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAC882A022E7A72600EEC4A9 /* utils.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = utils.hpp; sourceTree = "<group>"; };
 		BAC882A422E7A72600EEC4A9 /* utils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = utils.cpp; sourceTree = "<group>"; };
 		BAD585C322E798F6009DAFA5 /* vlinear */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vlinear; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAD585C522E798F6009DAFA5 /* vlinear.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vlinear.cpp; sourceTree = "<group>"; };
 		BAE2A7FE22E7A195001A8F41 /* libtriangulate.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libtriangulate.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		BAFC34E122F43C54003B72FC /* errors.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = errors.cpp; sourceTree = "<group>"; };
+		BAFC34E222F43C54003B72FC /* errors.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = errors.hpp; sourceTree = "<group>"; };
 		BAFF211122E799D10052E39E /* liblinear.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liblinear.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAFF211322E799D20052E39E /* linear.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = linear.hpp; sourceTree = "<group>"; };
 		BAFF211722E799D20052E39E /* linear.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = linear.cpp; sourceTree = "<group>"; };
@@ -109,6 +122,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA9911042304A4BD00B654CB /* libutils.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -199,6 +213,7 @@
 			children = (
 				BA5D83A122F051350009447F /* io.hpp */,
 				BA5D83A522F051350009447F /* io.cpp */,
+				BA9911002304A1AD00B654CB /* namelist.cpp */,
 			);
 			path = io;
 			sourceTree = "<group>";
@@ -208,6 +223,8 @@
 			children = (
 				BAC882A022E7A72600EEC4A9 /* utils.hpp */,
 				BAC882A422E7A72600EEC4A9 /* utils.cpp */,
+				BAFC34E122F43C54003B72FC /* errors.cpp */,
+				BAFC34E222F43C54003B72FC /* errors.hpp */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -254,6 +271,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BA0AB3F722F08AD300CDC818 /* constants.h in Headers */,
+				BAFC34EA22F43C54003B72FC /* errors.hpp in Headers */,
 				BA5D83A222F051350009447F /* io.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -272,6 +290,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BA0AB3F522F08AD300CDC818 /* constants.h in Headers */,
+				BAFC34E922F43C54003B72FC /* errors.hpp in Headers */,
 				BAC882AD22E7AB0A00EEC4A9 /* triangulate.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -281,6 +300,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BA0AB3F422F08AD300CDC818 /* constants.h in Headers */,
+				BAFC34E822F43C54003B72FC /* errors.hpp in Headers */,
 				BAFF211422E799D20052E39E /* linear.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -448,6 +468,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BAFC34E322F43C54003B72FC /* errors.cpp in Sources */,
 				BA39195B22D7271500D8C20B /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -456,7 +477,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BAFC34E722F43C54003B72FC /* errors.cpp in Sources */,
 				BA5D83A622F051350009447F /* io.cpp in Sources */,
+				BA9911022304A1AD00B654CB /* namelist.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -472,6 +495,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BAFC34E422F43C54003B72FC /* errors.cpp in Sources */,
 				BAD585C622E798F6009DAFA5 /* vlinear.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -480,6 +504,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BAFC34E622F43C54003B72FC /* errors.cpp in Sources */,
 				BAC882AC22E7AB0200EEC4A9 /* triangulate.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -488,6 +513,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BAFC34E522F43C54003B72FC /* errors.cpp in Sources */,
 				BAFF211822E799D20052E39E /* linear.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

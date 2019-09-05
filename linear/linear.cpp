@@ -96,7 +96,13 @@ void rsolv(double **a,const int n,const int np,double *d,double *b)
 }
 
 
-
+double dist3(double a[3], double b[3])
+{
+    double d=0.;
+    for (int i=0; i<3; ++i )
+        d += (b[i]-a[i])*(b[i]-a[i]);
+    return(d);
+}
 
 void crs3(double a[3], double b[3], double *c)
 {
@@ -116,4 +122,12 @@ void renorm3(double *v)
     for ( int i=0; i<3; ++i)
         v[i] /= norm;
     return;
+}
+
+double tetraVolume(double a[3], double b[3], double c[3], double d[3]) {
+// dot ( cross(b-a,c-a), d-a ) / 6
+//                   (b-a)            x   (c-a)                     (d-a)
+   return fabs( ( (b[1]-a[1])*(c[2]-a[2]) - (b[2]-a[2])*(c[1]-a[1]) ) * (d[0]-a[0])
+           +( (b[2]-a[2])*(c[0]-a[0]) - (b[2]-a[0])*(c[1]-a[2]) ) * (d[1]-a[1])
+           +( (b[0]-a[0])*(c[1]-a[1]) - (b[2]-a[1])*(c[1]-a[0]) ) * (d[2]-a[2]) ) /6.;
 }

@@ -54,9 +54,7 @@ template int find<int>(vector<int>,int val);
 uint64_t current_time() {
     using namespace std::chrono;
     return duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
-   // return duration_cast<microseconds>(high_resolution_clock::now()).count();
 }
-
 
 bool file_exist(char *fc){
     string fs(fc);
@@ -71,8 +69,6 @@ bool file_exist(string &fs){
     return true;
 }
 
-
-
 void string_split(std::string& str, vector<string> &cont, char delim)
 {
     std::stringstream ss(str);
@@ -80,4 +76,32 @@ void string_split(std::string& str, vector<string> &cont, char delim)
     while (std::getline(ss, token, delim)) {
         cont.push_back(token);
     }
+}
+
+template<typename T>
+int minpos(T *arr, int n) {
+    int i,pos=0;
+    T   v=0;
+    for (i=0;i<n;++i)
+        if ( arr[i] < v ) {
+            pos=i;
+            v=arr[i];
+        }
+    return pos;
+}
+template int minpos<double>(double *arr, int n);
+template int minpos<int>(int *arr, int n);
+
+std::string& ltrim(std::string& str, const std::string& chars){
+    str.erase(0, str.find_first_not_of(chars));
+    return str;
+}
+
+std::string& rtrim(std::string& str, const std::string& chars){
+    str.erase(str.find_last_not_of(chars) + 1);
+    return str;
+}
+
+std::string& trim(std::string& str, const std::string& chars){
+    return ltrim(rtrim(str, chars), chars);
 }

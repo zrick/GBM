@@ -9,15 +9,16 @@
 #ifndef triangulate_h
 #define triangulate_h
 
+#include <algorithm>
+#include <cmath>
+#include <cstring>
+#include <fstream>
 #include <iostream>
 #include <stdio.h>
-#include <fstream>
 #include <sstream>
-#include <cstring>
 #include <sys/stat.h>
-#include <vector>
 #include <utility>
-#include <algorithm>
+#include <vector>
 
 #include "constants.h"
 #include "types.h"
@@ -48,6 +49,10 @@ public:
     void setAtlas(string fname);
     
     // Data Members
+    int nDim, nVrt, nEdg, nTri, nTtr, nHul;
+    double box[6]; 
+    double volume;
+    
     TetraType *ttr;              // 3D Tetrahedrons
     VertexType *vrt;             // 0D Vertex Points
     std::vector<TriType>    tri; // 2D Triangles (surfaces of Tetrahedrons)
@@ -55,8 +60,6 @@ public:
     std::vector<TriType *>  hul; // Exterior Surface of Triangulation
 
     std::vector<string>   atlas; // Names of atlas regions; first element is atlas file
-    
-    int nDim, nVrt, nEdg, nTri, nTtr, nHul;
     
 private:
     void read_mesh(char *fname);

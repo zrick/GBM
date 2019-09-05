@@ -25,6 +25,7 @@ void vtkXMLFileOpen(string &name,int np,int nc,ofstream &f) {
 
 void vtkXMLFileClose(ofstream &f){
     f << "</Piece>\n</UnstructuredGrid>\n</VTKFile>\n";
+    f.close();
     return;
 }
 
