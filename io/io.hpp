@@ -16,27 +16,35 @@
 #include "constants.h"
 #include "utils.hpp"
 
+// #include "namelist.hpp"
+
 /* The classes below are exported */
 #pragma GCC visibility push(default)
 
 using namespace std;
-
 class Attribute{
 public:
     // Constructors
-    Attribute(string val, string typ);
-    
-    string val,typ;
+    Attribute(string &name, string &val);
+    string attName,attVal;
 };
+
+
 
 class Group{
 public:
-    //Constructors
+    // Constructors
     Group(string &s);
+    string name;
+    void addAttribute(string n, string v);
+    void getAttribute(string &n, string &v);
+    
+    std::vector<Attribute> att;
 private:
     // Functions
+    
     // Members
-    string name; 
+
 };
 
 
@@ -48,13 +56,20 @@ public:
     Namelist(char *fname);
     Namelist(const char fname[]);
     
+    int    getVal_int(string group,string name);
+    double getVal_dbl(string group,string name);
+    string getVal_str(string group,string name);
+    bool   getVal_bool(string group,string name);
+    
 private:
     //Functions
     void read_namelist(string s);
-    
+    string getValStr(string group,string var);
+
     // Members
     std::vector<Group> grp;
-    std::vector<string>grpNames; 
+    std::vector<string>grpNames;
+    
     
 };
 

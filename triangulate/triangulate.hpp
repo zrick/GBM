@@ -38,7 +38,7 @@ public:
     Triangulation(char *fname);
  
     // Function Members
-    void writeGrid(int format);
+    void writeGrid(string grid_file, string grid_format);
     void printHull(int format);
     
     void printVertex(VertexType *v, int level);

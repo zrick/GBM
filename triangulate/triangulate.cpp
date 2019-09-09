@@ -363,18 +363,27 @@ int Triangulation::is_edge(int v0, int v1){
     return ( -1 );
 }
 
-void Triangulation::writeGrid(int format){
-    /* PARAMETER level:
+void Triangulation::writeGrid(string grid_file, string grid_format) {
+
+    /* PARAMETER format:
      0 - bulk grid information;
      1 - basic connectivity;
      2 - detailed connectivity
      3 - VTK XML file*/
-    
-    char gname[MAX_CHAR_LEN] = "/Users/zrick/WORK/research_projects/GBM/grid.vtu.xml";
+
+    int format;
     double *data;
     int *idata;
     int iv,it,d,data_size;
-    
+
+    format=FMT_ASC_BASIC;
+    if ( ! grid_format.compare("ASCII_BASIC"))
+        format=FMT_ASC_BASIC;
+    else if (! grid_format.compare("ASCII_FULL"))
+        format=FMT_ASC_FULL;
+    else if (! grid_format.compare("XML_VTK"))
+        format=FMT_XML_VTK;
+
     if ( format <= FMT_ASC_FULL ) { // ASCII OUTPUT
         if ( format >=FMT_ASC_BASIC ) cout << '\n' << nVrt << " VERTICES\n==============\n";
         if ( format > FMT_ASC_BASIC ) for ( int i=0; i<nVrt; ++i) printVertex(&vrt[i],format);
@@ -391,7 +400,6 @@ void Triangulation::writeGrid(int format){
     else if ( format == FMT_XML_VTK ) { // VTK XML FILE
         vector<string> att;
         ofstream gfile;
-        string gname_str(gname);
        
         data_size = 3*nVrt > 4*nTtr? 3*nVrt : 4*nTtr;
         
@@ -399,7 +407,7 @@ void Triangulation::writeGrid(int format){
         data =(double*)malloc(data_size*sizeof(double));
         idata=(int*)   malloc(data_size*sizeof(int));
         
-        vtkXMLFileOpen(gname_str,nVrt,nTtr,gfile);
+        vtkXMLFileOpen(grid_file,nVrt,nTtr,gfile);
 
         // GRID INFORMATION -- VERTICES
         gfile << "<Points>\n";

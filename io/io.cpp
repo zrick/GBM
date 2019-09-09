@@ -8,9 +8,47 @@
 
 #include "io.hpp"
 
-Attribute::Attribute(string typ, string val) {
-    typ=string(typ);
-    val=string(val);
+Group::Group(string &s){
+    name=string(s);
+    
+    return;
+}
+
+void Group::addAttribute(string n, string v) {
+    int i;
+    
+    for (i=0; i<att.size(); ++i )
+        if ( att[i].attName.compare(n) == 0 ){
+            cout << "ERROR: Value for variable \'" << n <<"\' in group \'" << name << "\' exists already\n";
+            exit(EXIT_FAILURE);
+        }
+    
+    att.push_back(Attribute(n,v));
+    
+    return;
+}
+
+void Group::getAttribute(string &n, string &v) {
+    int i;
+    
+    for (i=0; i<att.size(); ++i )
+        if ( att[i].attName.compare(n) == 0 ){
+            v = string(att[i].attVal);
+            return;
+        }
+    
+    if ( i == att.size() )
+    {
+        cout << "Error: Variable \'" << n << "\' not found in group \'" << name << "\' with " << att.size() << " variables\n";
+        exit(EXIT_FAILURE);
+    }
+    
+    return;
+}
+
+Attribute::Attribute(string &typ, string &val) {
+    attName=string(typ);
+    attVal =string(val);
     return;
 }
 

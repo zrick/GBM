@@ -176,7 +176,7 @@
 			children = (
 				BA0AB3F222F08A8600CDC818 /* include */,
 				BA39195922D7271500D8C20B /* GBM */,
-				BAD585C422E798F6009DAFA5 /* vlinear */,
+				BAD585C422E798F6009DAFA5 /* Validate */,
 				BAFF211222E799D20052E39E /* linear */,
 				BAFF212422E79D8F0052E39E /* triangulate */,
 				BAC8829F22E7A72600EEC4A9 /* utils */,
@@ -229,13 +229,13 @@
 			path = utils;
 			sourceTree = "<group>";
 		};
-		BAD585C422E798F6009DAFA5 /* vlinear */ = {
+		BAD585C422E798F6009DAFA5 /* Validate */ = {
 			isa = PBXGroup;
 			children = (
 				BAD585C522E798F6009DAFA5 /* vlinear.cpp */,
 				BA5D839422EEF91D0009447F /* vlinear.hpp */,
 			);
-			path = vlinear;
+			path = Validate;
 			sourceTree = "<group>";
 		};
 		BAFF211222E799D20052E39E /* linear */ = {
