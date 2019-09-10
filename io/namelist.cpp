@@ -12,6 +12,11 @@ Namelist::Namelist(){
     return;
 }
 
+Namelist::Namelist(string &fname){
+    read_namelist(fname);
+    return; 
+}
+
 Namelist::Namelist(const char fname[]){
     string fstr(fname);
     read_namelist(fstr);
@@ -25,9 +30,8 @@ Namelist::Namelist(char *fname){
 }
 
 void Namelist::read_namelist(string s){
-    int iLine=0,i,j;
+    int iLine=0;
     string line;
-    double f;
     
     if ( file_exist(s) ) {
         cout << "Reading Namelist from file " << s << "\n";
@@ -65,6 +69,16 @@ void Namelist::read_namelist(string s){
     */
 
     return;
+}
+
+bool Namelist::hasVal(string group, string var){
+    int iGrp=find(grpNames,group);
+    
+    if ( iGrp >= grpNames.size() )
+        return false;
+    else
+        return true;
+        
 }
 
 string Namelist::getValStr(string group,string var){

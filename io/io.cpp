@@ -28,6 +28,14 @@ void Group::addAttribute(string n, string v) {
     return;
 }
 
+bool Group::hasAttribute(string &n) {
+    for (int i=0; i<att.size(); ++i )
+        if ( att[i].attName.compare(n) == 0 ){
+            return true;
+        }
+    return false;
+}
+
 void Group::getAttribute(string &n, string &v) {
     int i;
     

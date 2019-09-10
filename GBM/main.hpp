@@ -22,6 +22,19 @@
 #include "triangulate.hpp"
 #include "constants.h"
 #include "io.hpp"
+#include "types.h"
 
+typedef struct GBM_Data{
+    string grid_file;
+    string grid_format;
+    string atlas_file;
+    bool use_atlas; 
+    string tri_file;
+    Namelist nml;
+    Triangulation *tri;
+} GBM_Data;
+
+void gbm_read_namelist(string &nl_file, GBM_Data *p_g);
+void gbm_init(GBM_Data *p_g);
 #define main_h
 #endif /* main_h */

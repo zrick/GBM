@@ -9,6 +9,63 @@
 #ifndef types_h
 #define types_h
 
+#include <stdio.h>
+#include <cstring>
+
+using namespace std; 
+
+class Attribute{
+public:
+    // Constructors
+    Attribute(string &name, string &val);
+    string attName,attVal;
+};
+
+
+
+class Group{
+public:
+    // Constructors
+    Group(string &s);
+    string name;
+    void addAttribute(string n, string v);
+    void getAttribute(string &n, string &v);
+    bool hasAttribute(string &n);
+
+    std::vector<Attribute> att;
+private:
+    // Functions
+    
+    // Members
+};
+
+class Namelist{
+    
+public:
+    // Constructors
+    Namelist();
+    Namelist(char *fname);
+    Namelist(const char fname[]);
+    Namelist(string &fname);
+    
+    bool   hasVal(string group, string var);
+    
+    int    getVal_int(string group,string name);
+    double getVal_dbl(string group,string name);
+    string getVal_str(string group,string name);
+    bool   getVal_bool(string group,string name);
+    
+private:
+    //Functions
+    void read_namelist(string s);
+    string getValStr(string group,string var);
+    
+    // Members
+    std::vector<Group> grp;
+    std::vector<string>grpNames;
+
+};
+
 typedef struct VertexType{
     int idx;
     double p[3];   // position

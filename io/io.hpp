@@ -15,6 +15,7 @@
 #include <cstring>
 #include "constants.h"
 #include "utils.hpp"
+#include "types.h"
 
 // #include "namelist.hpp"
 
@@ -22,56 +23,6 @@
 #pragma GCC visibility push(default)
 
 using namespace std;
-class Attribute{
-public:
-    // Constructors
-    Attribute(string &name, string &val);
-    string attName,attVal;
-};
-
-
-
-class Group{
-public:
-    // Constructors
-    Group(string &s);
-    string name;
-    void addAttribute(string n, string v);
-    void getAttribute(string &n, string &v);
-    
-    std::vector<Attribute> att;
-private:
-    // Functions
-    
-    // Members
-
-};
-
-
-class Namelist{
-    
-public:
-    // Constructors
-    Namelist();
-    Namelist(char *fname);
-    Namelist(const char fname[]);
-    
-    int    getVal_int(string group,string name);
-    double getVal_dbl(string group,string name);
-    string getVal_str(string group,string name);
-    bool   getVal_bool(string group,string name);
-    
-private:
-    //Functions
-    void read_namelist(string s);
-    string getValStr(string group,string var);
-
-    // Members
-    std::vector<Group> grp;
-    std::vector<string>grpNames;
-    
-    
-};
 
 template<typename T> // explicit instantiation to types <double, int> in io.cpp
 void vtkXMLWriteDataArray(ofstream &gfile, vector<string> att, int nval, T *val);

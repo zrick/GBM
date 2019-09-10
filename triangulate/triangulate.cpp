@@ -16,12 +16,14 @@
 #include "triangulate.hpp"
 
 Triangulation::Triangulation(){
-    char fname[MAX_CHAR_LEN];
+    /*char fname[MAX_CHAR_LEN];
     
     cout << "Enter name of mesh file containing triangulation:";
     cin >> fname;
     
     read_mesh(fname);
+     */
+    return; 
 }
 
 Triangulation::Triangulation(char *fname){
@@ -593,7 +595,7 @@ void Triangulation::construct_normal(TetraType *t, TriType tri_loc,int ittr_loc)
 bool Triangulation::hasAtlas(){ return atlas.size() > 0? true : false; }
 
 void Triangulation::setAtlas(string fname){
-    int iLine=0, iAtl,iVrt, iTtr,vrt_count,reg_list[4],iuse;
+    int iLine=0, iAtl,iVrt, iTtr,reg_list[4],iuse;
     TetraType *pT;
     
     string line,dstr;
@@ -648,7 +650,7 @@ void Triangulation::setAtlas(string fname){
     for(iTtr=0; iTtr<nTtr; ++iTtr) {
         pT=&ttr[iTtr];
         pT->atl=NAN;
-        vrt_count=1;
+
         for ( iVrt=0; iVrt<4; ++iVrt )
             reg_list[iVrt] = vrt[pT->vrt[iVrt]].atl;
         sort4(reg_list);

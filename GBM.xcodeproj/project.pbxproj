@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BA00DFD32327B05500E12946 /* vspline.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA00DFD12327B05500E12946 /* vspline.cpp */; };
+		BA00DFD523282CAC00E12946 /* libio.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BA5D839F22F051350009447F /* libio.dylib */; };
+		BA00DFD623282CB000E12946 /* liblinear.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAFF211122E799D10052E39E /* liblinear.dylib */; };
+		BA00DFD723282CB300E12946 /* libtriangulate.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAE2A7FE22E7A195001A8F41 /* libtriangulate.dylib */; };
+		BA00DFD823282CB700E12946 /* libutils.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAC8829E22E7A72600EEC4A9 /* libutils.dylib */; };
 		BA0AB3F422F08AD300CDC818 /* constants.h in Headers */ = {isa = PBXBuildFile; fileRef = BA0AB3F322F08AD300CDC818 /* constants.h */; };
 		BA0AB3F522F08AD300CDC818 /* constants.h in Headers */ = {isa = PBXBuildFile; fileRef = BA0AB3F322F08AD300CDC818 /* constants.h */; };
 		BA0AB3F622F08AD300CDC818 /* constants.h in Headers */ = {isa = PBXBuildFile; fileRef = BA0AB3F322F08AD300CDC818 /* constants.h */; };
@@ -60,6 +65,15 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		BA00DFC82327B01500E12946 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 		BA39195522D7271500D8C20B /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -81,6 +95,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BA00DFCA2327B01500E12946 /* vspline */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vspline; sourceTree = BUILT_PRODUCTS_DIR; };
+		BA00DFD12327B05500E12946 /* vspline.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = vspline.cpp; sourceTree = "<group>"; };
+		BA00DFD22327B05500E12946 /* vspline.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = vspline.hpp; sourceTree = "<group>"; };
 		BA0AB3F322F08AD300CDC818 /* constants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = constants.h; sourceTree = "<group>"; };
 		BA0AB3FA22F09BC400CDC818 /* types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
 		BA39195722D7271500D8C20B /* GBM */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GBM; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -107,6 +124,17 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		BA00DFC72327B01500E12946 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BA00DFD823282CB700E12946 /* libutils.dylib in Frameworks */,
+				BA00DFD723282CB300E12946 /* libtriangulate.dylib in Frameworks */,
+				BA00DFD623282CB000E12946 /* liblinear.dylib in Frameworks */,
+				BA00DFD523282CAC00E12946 /* libio.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BA39195422D7271500D8C20B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -195,6 +223,7 @@
 				BAE2A7FE22E7A195001A8F41 /* libtriangulate.dylib */,
 				BAC8829E22E7A72600EEC4A9 /* libutils.dylib */,
 				BA5D839F22F051350009447F /* libio.dylib */,
+				BA00DFCA2327B01500E12946 /* vspline */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -234,6 +263,8 @@
 			children = (
 				BAD585C522E798F6009DAFA5 /* vlinear.cpp */,
 				BA5D839422EEF91D0009447F /* vlinear.hpp */,
+				BA00DFD12327B05500E12946 /* vspline.cpp */,
+				BA00DFD22327B05500E12946 /* vspline.hpp */,
 			);
 			path = Validate;
 			sourceTree = "<group>";
@@ -308,6 +339,23 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		BA00DFC92327B01500E12946 /* vspline */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BA00DFCE2327B01500E12946 /* Build configuration list for PBXNativeTarget "vspline" */;
+			buildPhases = (
+				BA00DFC62327B01500E12946 /* Sources */,
+				BA00DFC72327B01500E12946 /* Frameworks */,
+				BA00DFC82327B01500E12946 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = vspline;
+			productName = vspline;
+			productReference = BA00DFCA2327B01500E12946 /* vspline */;
+			productType = "com.apple.product-type.tool";
+		};
 		BA39195622D7271500D8C20B /* GBM */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = BA39195E22D7271500D8C20B /* Build configuration list for PBXNativeTarget "GBM" */;
@@ -421,6 +469,9 @@
 				LastUpgradeCheck = 1020;
 				ORGANIZATIONNAME = "Cedrick Ansorge";
 				TargetAttributes = {
+					BA00DFC92327B01500E12946 = {
+						CreatedOnToolsVersion = 10.2.1;
+					};
 					BA39195622D7271500D8C20B = {
 						CreatedOnToolsVersion = 10.2;
 					};
@@ -459,11 +510,20 @@
 				BAE2A7FD22E7A195001A8F41 /* triangulate */,
 				BAC8829D22E7A72600EEC4A9 /* utils */,
 				BA5D839E22F051350009447F /* io */,
+				BA00DFC92327B01500E12946 /* vspline */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
+		BA00DFC62327B01500E12946 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BA00DFD32327B05500E12946 /* vspline.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		BA39195322D7271500D8C20B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -534,6 +594,27 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		BA00DFCF2327B01500E12946 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = L2MA98K85G;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		BA00DFD02327B01500E12946 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = L2MA98K85G;
+				ENABLE_NS_ASSERTIONS = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		BA39195C22D7271500D8C20B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -815,6 +896,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		BA00DFCE2327B01500E12946 /* Build configuration list for PBXNativeTarget "vspline" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BA00DFCF2327B01500E12946 /* Debug */,
+				BA00DFD02327B01500E12946 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		BA39195222D7271500D8C20B /* Build configuration list for PBXProject "GBM" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

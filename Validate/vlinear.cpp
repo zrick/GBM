@@ -20,7 +20,7 @@ int main(int argc, const char * argv[]) {
     a=nullptr; b=nullptr; c=nullptr; d=nullptr;
     lhs=nullptr; rhs=nullptr;
     
-    n=100;
+    n=1000;
     n_block=int(n/2);
     
     cout << "ALLOCATING AND INITIALIZING ARRAYS\n";
@@ -62,7 +62,7 @@ int main(int argc, const char * argv[]) {
     cout <<"Testing QR decomposition\n";
     t_srt=current_time();
     sing=qrdcmp(a,n,n,c,d);
-    cout << "qrdcmp time elapsed: "<<current_time()-t_srt << "micro s \n";
+    cout << "qrdcmp time elapsed: "<<(current_time()-t_srt)/1000. << "ms \n";
     
     if ( sing > 0. ) {
         cout << "ERROR: Singularity encountered in qr decomposition \n";
@@ -71,7 +71,7 @@ int main(int argc, const char * argv[]) {
 
     t_srt=current_time();
     qrsolv(a,n,n,c,d,b);
-    cout <<"qrsolv time elapsed: "<<current_time()-t_srt << "micro s \n";
+    cout <<"qrsolv time elapsed: "<<(current_time()-t_srt)/1000. << "ms \n";
     
     max_res=0.;
     for(i=0;i<n;++i)
