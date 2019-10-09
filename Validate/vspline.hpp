@@ -20,7 +20,12 @@
 
 using namespace std;
 
+void get_tetra_splines_lhs(Triangulation *p_tri);
+
+
 double test_func(double *p, double *k);
 void writeSpline_test(string grid_file, Triangulation *tri, double *dat_v, double *dat_t);
+
+
 
 #endif /* vspline_hpp */

@@ -31,10 +31,10 @@ typedef struct GBM_Data{
     bool use_atlas; 
     string tri_file;
     Namelist nml;
-    Triangulation *tri;
+    Triangulation tri;
 } GBM_Data;
 
-void gbm_read_namelist(string &nl_file, GBM_Data *p_g);
-void gbm_init(GBM_Data *p_g);
+void gbm_read_namelist(string &nl_file, GBM_Data &g);
+void gbm_init(GBM_Data &g, Triangulation &t);
 #define main_h
 #endif /* main_h */

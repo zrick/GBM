@@ -28,6 +28,7 @@ Triangulation::Triangulation(){
 
 Triangulation::Triangulation(char *fname){
     read_mesh(fname);
+    return;
 }
 
 void Triangulation::read_mesh(char *fname){
@@ -188,8 +189,8 @@ void Triangulation::read_mesh(char *fname){
             }
             nHul++;
         }
-    
-    cout << "Calculated Hull; contains " << nHul << " triangles. \n";
+    cout << "Calculated Hull; contains " << nHul << " triangles." << std::endl;
+    cout << "Returning from Triangulatione::read_mesh" << std::endl;
     return;
 }
 
@@ -473,7 +474,7 @@ void Triangulation::writeGrid(string grid_file, string grid_format) {
             idata[iv]    =vrt[iv].atl;
             data[iv]     =vrt[iv].dia;
             data[nVrt+iv]=vrt[iv].vol;
-            cout << iv << " " << vrt[iv].vol << '\n';
+            // cout << iv << " " << vrt[iv].vol << '\n';
         }
         vtkXMLWriteDataArray(gfile,att,nVrt,idata);
         att[1]="Float32"; att[3]="Atlas_Diameter";

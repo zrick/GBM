@@ -30,7 +30,7 @@ int main(int argc, const char * argv[]) {
     for (int i=0;i<p_tri->nTtr;++i)
         dat_t[i]=0.;
     
-    //get_tetra_splines_lhs(p_tri);    // set-up QR decomposition for splines
+    get_tetra_splines_lhs(p_tri);    // set-up QR decomposition for splines
     //solve_tetra_splines(p_tri,dat_v);// solve splines
     
     writeSpline_test(ofile,&tri, dat_v, dat_t);

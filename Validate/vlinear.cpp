@@ -24,6 +24,15 @@ int main(int argc, const char * argv[]) {
     nm=571;
     n_block=int(n/2);
     
+    // Check Routine Tetra Volume
+    double points1[4][3] = { {0,0,0},{0,0,1},{0,1,0},{1,0,0}};
+    double points2[4][3] = { {1,0,0},{1,1,0},{1,0,1},{0,1,0}};
+    double points3[4][3] = { {0,0,0},{0,0,1},{0,1,0},{1,0,0}};
+    double points4[4][3] = { {0,0,0},{0,0,1},{0,1,0},{1,0,0}};
+    double points5[4][3] = { {0,0,0},{0,0,1},{0,1,0},{1,0,0}};
+    double points6[4][3] = { {0,0,0},{0,0,1},{0,1,0},{1,0,0}};
+    cout << std::fixed << 6*tetraVolume( &points1[0][0], &points1[1][0], &points1[2][0], &points1[3][0]) << std::endl;
+    cout << std::fixed << 6*tetraVolume( &points2[0][0], &points2[1][0], &points2[2][0], &points2[3][0]) << std::endl;
     cout << "ALLOCATING AND INITIALIZING ARRAYS\n";
     
     am  =(double***) malloc (n*sizeof(double **));
