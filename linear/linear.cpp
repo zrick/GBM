@@ -312,11 +312,15 @@ double dot3(double a[3], double b[3]){
     return (a[0]*b[0] + a[1]*b[1] + a[2]*b[2]);
 }
 
+double norm3(double a[3]){
+    return sqrt(a[0]*a[0]+a[1]*a[1]+a[2]*a[2]);
+}
+
 void renorm3(double *v)
 {
-    double norm=sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+    double n=norm3(v);
     for ( int i=0; i<3; ++i)
-        v[i] /= norm;
+        v[i] /= n;
     return;
 }
 
@@ -325,4 +329,15 @@ double tetraVolume(double a[3], double b[3], double c[3], double d[3]) {
          ( (b[1]-a[1])*(c[2]-a[2]) - (b[2]-a[2])*(c[1]-a[1])) * (d[0]-a[0])
         +( (b[2]-a[2])*(c[0]-a[0]) - (b[0]-a[0])*(c[2]-a[2])) * (d[1]-a[1])
         +( (b[0]-a[0])*(c[1]-a[1]) - (b[1]-a[1])*(c[0]-a[0])) * (d[2]-a[2]) ) /6.;
+}
+
+double triArea(double a[3], double b[3], double c[3]) {
+    double d1[3], d2[3], d3[3];
+    for ( int id=0; id<3; ++id){
+        d1[id] = b[id]-a[id];
+        d2[id] = c[id]-a[id];
+    }
+    
+    crs3(d1,d2,d3);
+    return norm3(d3)/2.; 
 }

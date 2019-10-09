@@ -1,12 +1,3 @@
-//
-//  triangulate.cpp
-//  triangulate
-//
-//  Created by Cedrick Ansorge on 23.07.19.
-//  Copyright © 2019 Cedrick Ansorge. All rights reserved.
-//
-
-//
 //  triangulate.cpp
 //  GBM
 //
@@ -200,7 +191,7 @@ int Triangulation::add_tris(int it, TetraType *t){
     int itri_loc;
     
     for ( int i=0; i<4; ++i){
-        for (int d=0; d<3; ++d) v[d]=t->vrt[com[i][d]];
+        for (int dd=0; dd<3; ++dd) v[dd]=t->vrt[com[i][dd]];
         itri_loc=is_triangle(v);
         
         if ( itri_loc < 0) { // Triangle needs to be added
@@ -233,6 +224,7 @@ int Triangulation::add_tris(int it, TetraType *t){
             
             tri_loc.ttr[1]=-1;
             tri_loc.bdy=true;
+            tri_loc.area=triArea(vrt[v[0]].p,vrt[v[1]].p,vrt[v[2]].p);
             tri.push_back(tri_loc);
             
             nTri++;

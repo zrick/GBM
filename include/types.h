@@ -99,6 +99,7 @@ typedef struct TriType{
     int ttr[2];    // Tetrahedrons
     double c[3];   // Centroid
     double n[2][3];// Outer normals w.r.t. Tetrahedra ttr[0] and ttr[1]
+    double area; 
     bool bdy;      // true if part of external surface
 } TriType;
 
