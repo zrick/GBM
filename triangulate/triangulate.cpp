@@ -377,7 +377,7 @@ void Triangulation::writeGrid(string grid_file, string grid_format) {
     double *data;
     int *idata;
     int iv,it,d,data_size;
-
+    
     format=FMT_ASC_BASIC;
     if ( ! grid_format.compare("ASCII_BASIC"))
         format=FMT_ASC_BASIC;
@@ -386,6 +386,8 @@ void Triangulation::writeGrid(string grid_file, string grid_format) {
     else if (! grid_format.compare("XML_VTK"))
         format=FMT_XML_VTK;
 
+    cout << "WRITING GRID: " << grid_file << " "<< format <<" \n";
+    
     if ( format <= FMT_ASC_FULL ) { // ASCII OUTPUT
         if ( format >=FMT_ASC_BASIC ) cout << '\n' << nVrt << " VERTICES\n==============\n";
         if ( format > FMT_ASC_BASIC ) for ( int i=0; i<nVrt; ++i) printVertex(&vrt[i],format);
@@ -416,7 +418,7 @@ void Triangulation::writeGrid(string grid_file, string grid_format) {
         // <DataArray type="Float32" NumberOfComponents="3" format="ascii">
         att.push_back("type");              att.push_back("Float32");
         att.push_back("NumberOfComponents");att.push_back("3");
-        att.push_back("format");             att.push_back("ascii");
+        att.push_back("format");            att.push_back("ascii");
        
         for (iv=0;iv<nVrt;++iv)
             for (d=0;d<3;++d)
@@ -449,8 +451,8 @@ void Triangulation::writeGrid(string grid_file, string grid_format) {
         att.clear();
         
         // <DataArray type="Int32" Name="offsets" format="ascii">
-        att.push_back("type"); att.push_back("Int32");
-        att.push_back("Name"); att.push_back("offsets");
+        att.push_back("type");  att.push_back("Int32");
+        att.push_back("Name");  att.push_back("offsets");
         att.push_back("format");att.push_back("ascii");
         for (it=0; it<nTtr; ++it)
             idata[it] =(it+1)*4;
@@ -471,6 +473,7 @@ void Triangulation::writeGrid(string grid_file, string grid_format) {
             idata[iv]    =vrt[iv].atl;
             data[iv]     =vrt[iv].dia;
             data[nVrt+iv]=vrt[iv].vol;
+            cout << iv << " " << vrt[iv].vol << '\n';
         }
         vtkXMLWriteDataArray(gfile,att,nVrt,idata);
         att[1]="Float32"; att[3]="Atlas_Diameter";
@@ -635,6 +638,7 @@ void Triangulation::setAtlas(string fname){
         string_split(line,line_split,',');
         if ( (iAtl = find(atlas,line_split[1])) == atlas.size() ) {
             cout << "ERROR: Atlas type " << line_split[1] << "not found in atlas of size " << atlas.size() << '\n';
+            exit(EXIT_FAILURE);
         } else {
             iVrt=atoi(line_split[0].c_str())-1;  // numbering in Atlas is 1-based;
             vrt[iVrt].atl=iAtl;
@@ -643,8 +647,12 @@ void Triangulation::setAtlas(string fname){
         }
     }
     
-    if (iLine < nVrt)
+    if (iLine < nVrt) {
         cout << "ERROR: Atlas of size " << atlas.size() << " only contains " << iLine << "nodes; need" << nVrt << '\n';
+        // write msg
+        // gbm_throw(msg,GBM_ATLAS_ERROR) -- write log / stdout / stack trace? / throw error
+        exit(EXIT_FAILURE);
+    }
     
     // Now set labels to tetrahedrons where all vertices belong to the same region
     for(iTtr=0; iTtr<nTtr; ++iTtr) {

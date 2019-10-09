@@ -85,7 +85,7 @@ void vtkXMLWriteDataArray(ofstream &gfile, vector<string> att, int nval, T *val)
         gfile << att[2*i] << "=\"" << att[2*i+1] << "\" ";
     gfile << ">\n";
     for (i=0;i<nval;++i)
-        gfile << val[i] << " "; 
+        gfile << std::fixed << val[i] << " "; 
     gfile << "\n</DataArray>\n";
     
    

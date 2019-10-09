@@ -55,6 +55,10 @@ public:
     string getVal_str(string group,string name);
     bool   getVal_bool(string group,string name);
     
+    void getList_int(string group, string var,int    *list, const int nmax);
+    void getList_dbl(string group, string var,double *list, const int nmax);
+
+    
 private:
     //Functions
     void read_namelist(string s);

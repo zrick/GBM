@@ -72,13 +72,17 @@ void Namelist::read_namelist(string s){
 }
 
 bool Namelist::hasVal(string group, string var){
-    int iGrp=find(grpNames,group);
+    int iGrp;
+    iGrp=find(grpNames,group);
     
     if ( iGrp >= grpNames.size() )
         return false;
-    else
-        return true;
-        
+    else {
+        if ( grp[iGrp].hasAttribute(var) )
+            return true;
+        else
+            return false;
+    }
 }
 
 string Namelist::getValStr(string group,string var){
@@ -88,7 +92,7 @@ string Namelist::getValStr(string group,string var){
     
     iGrp=find(grpNames,group);
     if ( iGrp >= grpNames.size() ) {
-        cout << "ERROR: Group" << group << "not found in grpNames of len " << grpNames.size() << "\n";
+        cout << "ERROR: Group \'" << group << "\' not found in grpNames of len " << grpNames.size() << "\n";
         exit(EXIT_FAILURE);
     }
     p_grp=&grp[iGrp];
@@ -99,6 +103,29 @@ string Namelist::getValStr(string group,string var){
 
 int Namelist::getVal_int(string group,string var) {
     return atoi(getValStr(group,var).c_str());
+}
+
+void Namelist::getList_dbl(string group, string var,double *list, const int nmax){
+    int i;
+    string s=getValStr(group,var);
+    vector<string> s_split;
+    string_split(s, s_split,',');
+    if ( s_split.size() > nmax ){
+        cout << "Warning: Found more values in \'" << var <<"\' of group \'" << group << "\' than needed\n";
+        cout << "         Ignoring " << s_split.size()-nmax << "values.\n";
+    }
+    
+    for ( i=0; i<nmax; ++i)
+        list[i]=atof(s_split[i].c_str());
+    
+    return;
+}
+
+
+void Namelist::getList_int(string group, string var,int *list, const int nmax){
+    cout << "not implemented \n";
+    exit(EXIT_FAILURE);
+    return; 
 }
 
 double Namelist::getVal_dbl(string group,string var) {

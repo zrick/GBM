@@ -41,6 +41,8 @@ int main(int argc, const char * argv[]) {
     
     std::cout << "Starting GBM \n";
 
+    p_gbm->tri->writeGrid(p_gbm->grid_file,p_gbm->grid_format);
+    
     return 0;
 }
 

@@ -27,4 +27,7 @@
 #define FMT_ASC_FULL  2
 #define FMT_XML_VTK   3
 
+#define PI 3.141592653589793
+
+
 #endif /* constants_h */
