@@ -94,3 +94,36 @@ void vtkXMLWriteDataArray(ofstream &gfile, vector<string> att, int nval, T *val)
 template void vtkXMLWriteDataArray<double>(ofstream &gfile, vector<string> att, int nval, double *val);
 template void vtkXMLWriteDataArray<int>(ofstream &gfile, vector<string> att, int nval, int *val);
 
+void GBMError(string loc, string msg, int stat){
+    ofstream os;
+    os.open(GBM_FILE_ERR,ios_base::app);
+    os << "GBM ERROR " << stat << "(" << loc << "): " << msg;
+    cout <<"GBM ERROR " << stat << "(" << loc << "): " << msg << std::endl;
+    os.close();
+    exit(stat);
+}
+
+void GBMWarning(string loc, string msg, int stat){
+    ofstream os;
+    os.open(GBM_FILE_ERR,ios_base::app);
+    os << "GBM Warning" << stat << "(" << loc << "): " << msg;
+    cout <<"GBM Warning" << stat << "(" << loc << "): " << msg << std::endl;
+    os.close();
+}
+
+void GBMLog(string msg){
+    ofstream os;
+    os.open(GBM_FILE_LOG,ios_base::app);
+    os << msg << std::endl;
+    os.close();
+    return;
+}
+
+void GBMOut(string msg){
+    ofstream os;
+    os.open(GBM_FILE_OUT,ios_base::app);
+    os << msg << std::endl;
+    os.close();
+    return;
+}
+

@@ -33,9 +33,8 @@ void Namelist::read_namelist(string s){
     int iLine=0;
     string line;
     
-    if ( file_exist(s) ) {
-        cout << "Reading Namelist from file " << s << "\n";
-    }
+    if ( file_exist(s) )
+        GBMLog("Reading Namelist from file " + s);
     
     ifstream tfile(s);
     
@@ -47,11 +46,10 @@ void Namelist::read_namelist(string s){
             continue;
         } else if ( line[0] == '[') {
             line=trim(line.erase(line.find_first_of(']')).erase(0,1));
-            // Raise an error if the group already exists
-            if ( find(grpNames,line) < grpNames.size() ) {
-                cout << "ERROR: Group \'" << line << "\' exists alread\n";
-                exit(EXIT_FAILURE);
-            }
+
+            if ( find(grpNames,line) < grpNames.size() )
+                GBMError("Namelist::read_namelist", "Group \'" + line + "\' exists already",GBM_ERROR_NAMELIST);
+
             grp.push_back(Group(line));
             grpNames.push_back(line); 
         } else if ( line.size() > 0 ) {
@@ -62,12 +60,6 @@ void Namelist::read_namelist(string s){
         }
     }
     
-    /*
-    for( i=0; i<grp.size(); ++i)
-        for ( j=0; j<grp[i].att.size(); ++j)
-            cout << grpNames[i] << ":" << grp[i].att[j].attName<< '=' << grp[i].att[j].attVal <<'\n';
-    */
-
     return;
 }
 
@@ -91,10 +83,9 @@ string Namelist::getValStr(string group,string var){
     string val_str;
     
     iGrp=find(grpNames,group);
-    if ( iGrp >= grpNames.size() ) {
-        cout << "ERROR: Group \'" << group << "\' not found in grpNames of len " << grpNames.size() << "\n";
-        exit(EXIT_FAILURE);
-    }
+    if ( iGrp >= grpNames.size() )
+        GBMError("Namelist::getValStr", "Group \'" + group + "\' not found in grpNames of len " + to_string( grpNames.size()), GBM_ERROR_NAMELIST);
+
     p_grp=&grp[iGrp];
     p_grp->getAttribute(var, val_str);
 
@@ -110,9 +101,9 @@ void Namelist::getList_dbl(string group, string var,double *list, const int nmax
     string s=getValStr(group,var);
     vector<string> s_split;
     string_split(s, s_split,',');
-    if ( s_split.size() > nmax ){
-        cout << "Warning: Found more values in \'" << var <<"\' of group \'" << group << "\' than needed\n";
-        cout << "         Ignoring " << s_split.size()-nmax << "values.\n";
+    if ( s_split.size() > nmax ) {
+        GBMWarning("Namelist::getList_dbl", "Found more values in \'" + var +"\' of group \'" + group + "\' than needed",GBM_ERROR_NAMELIST);
+        GBMWarning("Namelist::getList_dbl", "Ignoring " +to_string(s_split.size()-nmax) + "values.",GBM_ERROR_NAMELIST);
     }
     
     for ( i=0; i<nmax; ++i)
@@ -123,21 +114,27 @@ void Namelist::getList_dbl(string group, string var,double *list, const int nmax
 
 
 void Namelist::getList_int(string group, string var,int *list, const int nmax){
-    cout << "not implemented \n";
-    exit(EXIT_FAILURE);
+    GBMError("Namelist:getList_int","Not Implemented",GBM_ERROR_UNDEVELOPED);
     return; 
 }
 
 double Namelist::getVal_dbl(string group,string var) {
+    if ( ! hasVal(group,var) )
+        GBMError("Namelist:getVal_dbl", string("No default for [" + group +"]:" + var), GBM_ERROR_NAMELIST);
     return atof(getValStr(group,var).c_str());
 }
                  
 string Namelist::getVal_str(string group,string var) {
+    if ( !hasVal(group,var) )
+        GBMError("Namelist:getVal_dbl", string("No default for [" + group +"]:" + var), GBM_ERROR_NAMELIST);
     return getValStr(group,var);
 }
 
 bool Namelist::getVal_bool(string group, string var) {
     string s=getVal_str(group,var);
+
+    if ( !hasVal(group,var) )
+        GBMError("Namelist:getVal_dbl", string("No default for [" + group +"]:" + var), GBM_ERROR_NAMELIST);
     
     transform(s.begin(),s.end(),s.begin(),::tolower);
 
@@ -146,7 +143,7 @@ bool Namelist::getVal_bool(string group, string var) {
     if ( s.compare("f")==0 || s.compare("false")==0|| s.compare("1")==0 || s.compare(".false.")==0 )
         return false;
     else {
-        cout << "ERROR: cannot guess bool from \'" << s << "\' for variable \'" << var <<"\' \n";
+        GBMError("Namelist::getVal_bool", "cannot guess bool from \'" + s + "\' for variable \'" + var  +"\'",GBM_ERROR_NAMELIST);
         exit(EXIT_FAILURE);
     }
 }

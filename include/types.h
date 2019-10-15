@@ -80,7 +80,9 @@ typedef struct VertexType{
     int tri[MAX_VRT_TRI];
     int ttr[MAX_VRT_TTR];
     int nVrtEdg, nVrtTri, nVrtTtr;
+    int kind; 
     bool bdy;
+    bool halo;
 } VertexType;
 
 typedef struct EdgeType{
@@ -116,6 +118,7 @@ typedef struct TetraType{
     int n_neighbor;
     int n_adjacent;
     bool bdy;
+    bool halo; 
 } TetraType;
 
 

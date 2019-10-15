@@ -32,6 +32,7 @@ typedef struct GBM_Data{
     string tri_file;
     Namelist nml;
     Triangulation tri;
+    bool periodic[3]; 
 } GBM_Data;
 
 void gbm_read_namelist(string &nl_file, GBM_Data &g);

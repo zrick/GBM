@@ -14,41 +14,43 @@ int main(int argc, const char * argv[]) {
     double dum;
     string nl_name;
     GBM_Data gbm;
-
+        
+    GBMLog("\n\n==============================================\nSTARTING GBM on " + gbmTime());
     
     if ( argc >1 ) {
         nl_name=string(argv[1]);
     }
     else   {
-        nl_name=string("/Users/zrick/Work/research_projects/GBM/namelist.nml");
+        nl_name=string("/Users/zrick/Work/research_projects/GBM/gbm.nml");
     }
     
     gbm_read_namelist(nl_name,gbm);
     gbm_init(gbm,gbm.tri);
         
      
-    std::cout << "Starting GBM \n";
-
     gbm.tri.writeGrid(gbm.grid_file,gbm.grid_format);
   
     dum=0;
     for ( i=0; i<gbm.tri.nVrt; ++i)
         if ( gbm.tri.vrt[i].vol > 0 )
             dum += gbm.tri.vrt[i].vol;
-    cout <<"Total volume of Vertices: " << dum << '\n';
+    GBMLog("Total volume of Vertices: " +to_string(dum));
     
     dum=0.;
     for ( i=0; i<gbm.tri.nTri; ++i)
         dum+=gbm.tri.tri[i].area;
-     cout << "Triangle Area: " << dum;
+    GBMLog("Triangle Area: " +to_string(dum));
     
     dum=0;
     for ( std::vector<TriType *>::iterator tri_it = gbm.tri.hul.begin(); tri_it!= gbm.tri.hul.end(); ++tri_it) {
         dum+=(*tri_it)->area;
     }
-    cout << "; Surface Area: " << dum << std::endl;
+    GBMLog("Surface Area: "+to_string(dum));
     
-    std::cout <<"GBM FINISHED" << std::endl;
+    gbm.tri.ConstructHalo();
+    gbm.tri.writeGrid("/Users/zrick/WORK/research_projects/GBM/test.vtu.xml","XML_VTK");
+    
+    GBMLog("FINISHED GBM on " + gbmTime() + "====================================================\n\n");
     
     return 0;
 }
@@ -72,17 +74,27 @@ void gbm_read_namelist(string &nl_file,GBM_Data &g){
         g.atlas_file= nl->getVal_str("Files","atlas");
     }
     
+    for(int i=0; i<3; ++i)   // Default is non-periodic
+        g.periodic[i]=false;
+    g.periodic[0]=nl->getVal_bool("Grid","periodic_x");
+    g.periodic[1]=nl->getVal_bool("Grid","periodic_y");
+    g.periodic[2]=nl->getVal_bool("Grid","periodic_z");
+    
     return;
 }
 
 void gbm_init(GBM_Data &g, Triangulation &tri){
-    tri = Triangulation((char *) &(g.tri_file.c_str()[0] ) );
+    tri = Triangulation((char *) &(g.tri_file.c_str()[0] ),g.periodic);
+    string str;
+    stringstream sstr;
     if (g.use_atlas)
          tri.setAtlas(g.atlas_file);                         // add atlas to triangulation
      
-    cout << "Total volume of Tetrahedrons: " << tri.volume  << '\n' ;
-    cout << "Bounding Box:";
+    GBMLog("Total volume of Tetrahedrons: " +to_string(tri.volume));
+    sstr << "Bounding Box:" << setprecision(4) << scientific;
     for ( int i=0; i<3; ++i)
-        cout <<"[" << tri.box[2*i] << "," << tri.box[2*i+1] << "]" << ( i<2?" x ":"\n" );
+        sstr <<  "[" << tri.box[2*i] << "," << tri.box[2*i+1] << "]" << ( i<2?" x ": "" );
+
+    GBMLog(sstr.str());
 return;
 }

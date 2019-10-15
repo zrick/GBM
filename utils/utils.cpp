@@ -105,3 +105,11 @@ std::string& rtrim(std::string& str, const std::string& chars){
 std::string& trim(std::string& str, const std::string& chars){
     return ltrim(rtrim(str, chars), chars);
 }
+
+std::string gbmTime(){
+    time_t _tm =time(NULL );
+    stringstream s;
+    struct tm * curtime = localtime ( &_tm );
+    s<<asctime(curtime);
+    return s.str();
+}

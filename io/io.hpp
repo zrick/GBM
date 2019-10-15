@@ -30,5 +30,10 @@ void vtkXMLWriteDataArray(ofstream &gfile, vector<string> att, int nval, T *val)
 void vtkXMLFileOpen(string &name,int np,int nc,ofstream &f);
 void vtkXMLFileClose(ofstream &f);
 
+void GBMError(string loc, string msg, int stat);
+void GBMWarning(string loc, string msg, int stat);
+void GBMLog(string msg);
+void GBMOut(string msg);
+
 #pragma GCC visibility pop
 #endif

@@ -27,7 +27,6 @@
 #include "utils.hpp"
 #include "io.hpp"
 
-
 using namespace std;
 
 class Triangulation{
@@ -35,7 +34,7 @@ class Triangulation{
 public:
     // Constructors
     Triangulation();
-    Triangulation(char *fname);
+    Triangulation(char *fname,bool p[3]);
  
     // Function Members
     void writeGrid(string grid_file, string grid_format);
@@ -45,30 +44,58 @@ public:
     void printEdge(EdgeType *e, int level);
     void printTriangle(TriType *t, int level);
     void printTetrahedron(TetraType *t, int level);
+    
     bool hasAtlas();
     void setAtlas(string fname);
     
+    void ConstructHull();
+    void ConstructHalo();
+
+    void TtrSplines_lhs();
+    void TtrSplines_rhs(double *data);
+    void CentroidSplines(double *v); 
+    
     // Data Members
     int nDim, nVrt, nEdg, nTri, nTtr, nHul;
-    double box[6]; 
+    int nTtr_inner, nVrt_inner;
+    double box[6], halo_box[6];
     double volume;
     
-    TetraType *ttr;              // 3D Tetrahedrons
-    VertexType *vrt;             // 0D Vertex Points
-    std::vector<TriType>    tri; // 2D Triangles (surfaces of Tetrahedrons)
-    std::vector<EdgeType>   edg; // 1D Edges of Tetrahedrons and Triangles
-    std::vector<TriType *>  hul; // Exterior Surface of Triangulation
-
-    std::vector<string>   atlas; // Names of atlas regions; first element is atlas file
+    vector<TetraType>  ttr; // 3D Tetrahedrons
+    vector<VertexType> vrt; // 0D Vertex Points
+    vector<TriType>    tri; // 2D Triangles (surfaces of Tetrahedrons)
+    vector<EdgeType>   edg; // 1D Edges of Tetrahedrons and Triangles
+    //  
+    vector<TriType *>  hul; // Exterior Surface of Triangulation
+    vector<string>   atlas; // Names of atlas regions; first element is atlas file
     
 private:
     void read_mesh(char *fname);
     void construct_normal(TetraType *t, TriType tri_loc, int ittr_loc);
 
-    int add_edges(int it, TetraType *t);
-    int add_tris(int it, TetraType *t);
-    int is_triangle(int v[3]);
-    int is_edge(int v0, int v1);
+    int addVertex(istringstream &l,bool halo=false);
+    int addVertex(double p[3],     bool halo=false);
+    int addTetra(istringstream &l, bool halo=false);
+    int addTetra(int p[4],         bool halo=false);
+    int addEdges(int it, TetraType *t);
+    int addTris(int it, TetraType *t);
+    void addHalo();
+
+    int isTetra(int p[4], int start=0, int end=-1);
+    int isTriangle(int v[3]);
+    int isEdge(int v0, int v1);
+    int isVertex(double p[3], int start=0, int end=-1);
+    
+    void ttrPeriodic(int it, int iv, int idim, int *ttr_new);
+    void ttrPeriodic(int it, int iv2, bool per[3], int *ttr_new);
+
+    double ***QRSplines_a;
+    double **QRSplines_b;
+    double **QRSplines_c;
+    double **QRSplines_d;
+    double *QRSplines_bare;
+    
+    bool periodic[3]; 
 };
 
 #endif // ifndef triangulate_h

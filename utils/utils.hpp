@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <fstream>
 #include <iostream>
 #include <iterator>
 #include <sstream>
@@ -22,8 +23,13 @@
 #include <vector>
 
 #include "constants.h"
+#include "errors.hpp"
 
 using namespace std;
+
+void GBMError(string loc, string msg, int stat);
+void GBMLog(string msg);
+void GBMOut(string msg);
 
 template<class T>int afind(T *v, int n, T val);
 template<class T>int find(vector<T> vec,T val);
@@ -38,4 +44,7 @@ void string_split(std::string &str, vector<string> &cont, char delim=' ');
 std::string& ltrim(std::string& str, const std::string& chars = "\t\n\v\f\r ");
 std::string& rtrim(std::string& str, const std::string& chars = "\t\n\v\f\r ");
 std::string& trim(std::string& str, const std::string& chars = "\t\n\v\f\r ");
+
+std::string gbmTime(); 
+
 #endif
