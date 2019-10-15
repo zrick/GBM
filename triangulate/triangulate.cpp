@@ -30,13 +30,11 @@ Triangulation::Triangulation(char *fname,bool p[3]){
 }
 
 void Triangulation::read_mesh(char *fname){
-    // LOCAL DECLARATIONS
-    int iLine=0,nEdgCommon;
+    int iLine=0,nVrt_target;
     string line;
-    TetraType *p_ttr;
     istringstream lss;
     ifstream tfile;
-    int nVrt_target;
+
     // check if file exists
     if ( file_exist(fname) )
         GBMLog("Reading mesh from file \'" + string( &fname[0] ) + "\'");
@@ -49,11 +47,9 @@ void Triangulation::read_mesh(char *fname){
     lss >> nDim; nDim--;   // decrement by one, because it includes elevation
     if ( nDim != 3 )
         GBMError("read_mesh", string("in"+ string(fname)+":"+ to_string(iLine+1)+
-                                     "Dimensions of"+to_string(nDim) + " not supported"),GBM_ERROR_DIM);
-    
+                                     "Dimensions of"+to_string(nDim) + " not supported"),GBMERR_DIM);
     getline(tfile,line); iLine++;
     lss = istringstream(line);  lss >> nVrt_target;
-    
     GBMLog("Dimensions: " +to_string(nDim));
     GBMLog("Reading:    " +to_string(nVrt_target) +"Vertices");
 
@@ -68,7 +64,7 @@ void Triangulation::read_mesh(char *fname){
         if ( ( nVrt=addVertex(lss=istringstream(line)) ) != iVrt+1)
             GBMError("Triangulation::read_mesh",
                      "Reading Vertex "+to_string(iVrt)+" Position in File does not match position in Vector",
-                     GBM_ERROR_INDEX);
+                     GBMERR_INDEX);
     }
     
     // READ TETRAHEDRONS
@@ -84,49 +80,55 @@ void Triangulation::read_mesh(char *fname){
         getline(tfile,line);
         lss=istringstream(line);
         if ( addTetra(lss) != iTtr+1 )
-            GBMError(string("read_mesh"),
-                     string("Index of Tetrahedron " + to_string(iTtr) +
-                            "does not match size of vector " +to_string(ttr.size())), GBM_ERROR_INDEX);
+            GBMError("Triangulation::read_mesh","Index of Tetrahedron " + to_string(iTtr) +
+                            "does not match size of vector " +to_string(ttr.size()), GBMERR_INDEX);
     }
     
-    // Fix Neighbors
-    for ( int iTtr=0; iTtr<nTtr; ++iTtr ) {
-        p_ttr=&ttr[iTtr];
-        
-        for (int iAdj=0; iAdj < p_ttr->n_adjacent; iAdj++ )
-        {
-            int i_other = p_ttr->a[iAdj];
-            nEdgCommon=0;
-            for ( int iEdg=0; iEdg<6; ++ iEdg)   // count all common edges
-                if ( afind(ttr[i_other].edg,6,p_ttr->edg[iEdg]) != 6 )
-                    nEdgCommon++;
-            
-            if ( nEdgCommon == 3) {
-                p_ttr->n[p_ttr->n_neighbor]=i_other;
-                p_ttr->n_neighbor++;
-                
-                if ( p_ttr->n_neighbor > 4 ) {
-                    cout << "ERROR: Internal Error; the number of neighbors cannot be larger than 4 \n \
-                    Found " << p_ttr->n_neighbor << "for Tetra " << iTtr << '\n';
-                    exit(EXIT_FAILURE);
-                }
-            } else if ( nEdgCommon != 1 ) {
-                cout << "ERROR: Internal Error the number of common Edges among Tetrahedrons \n \
-                Must either be 1 or 3;\n       Found " << nEdgCommon;
-                exit(EXIT_FAILURE);
-            }
-        }
-        if ( p_ttr-> n_neighbor <1 || p_ttr->n_neighbor > 4){
-            cout << "ERROR: Internal Error the number of neighbors for a Tetrahedron must be 2,3, or 4; found " << p_ttr->n_neighbor << "\n";
-        }
-    }
+    fixNeighbors();
     GBMLog("Fixed Neighbors");
     
     // Construct Hull; fix boudary property of vertices, edges, and terahedras
     ConstructHull();
-   
     GBMLog("Calculated Hull; contains " + to_string(nHul) + " triangles.");
 
+    return;
+}
+
+void Triangulation::fixNeighbors() {
+    TetraType *pt;
+    int it, nEdgCommon, i_other, iAdj;
+    
+    for (it=0; it<nTtr; ++it) {
+        pt=&ttr[it];
+        pt->n_neighbor=0;        // reset number of neighbors
+
+        // now check for all adjactent tetrahedrons whether a surface is shared
+        for (iAdj=0; iAdj < pt->n_adjacent; iAdj++ ) {
+            i_other = pt->a[iAdj];
+            nEdgCommon=0;
+            for ( int iEdg=0; iEdg<6; ++ iEdg)   // count all common edges
+                if ( afind(ttr[i_other].edg,6,pt->edg[iEdg]) != 6 )
+                    nEdgCommon++;
+           
+            if ( nEdgCommon == 3) {
+                pt->n[pt->n_neighbor]=i_other;
+                pt->n_neighbor++;
+               
+                if ( pt->n_neighbor > 4 )
+                    GBMError("Triangulation::fixNeighbor",
+                             "Internal-the number of neighbors cannot be larger than 4 Found "+to_string(pt->n_neighbor) +"for Tetra " +to_string(it),
+                             GBMERR_TOPOLOGY);
+            } else if ( nEdgCommon != 1 )
+                GBMError("Triangulation::fixNieghbor",
+                         "Internal - the number of common Edges among Tetrahedrons Must either be 1 or 3, Found"
+                         +to_string(nEdgCommon),GBMERR_TOPOLOGY);
+        }
+        if ( pt-> n_neighbor <1 || pt->n_neighbor > 4)
+            GBMError("Triangulation::fixNeighbor",
+                     "Internal -- the number of neighbors for a Tetrahedron must be 2,3, or 4; found "
+                     +to_string(pt->n_neighbor), GBMERR_TOPOLOGY);
+    }
+    
     return;
 }
 
@@ -152,11 +154,10 @@ int Triangulation::addTris(int it, TetraType *t){
                 tri_loc.c[d]=0.;                     // calculate centre
                 for(int dd=0;dd<3;++dd)
                     tri_loc.c[d] += vrt[v[dd]].p[d] /3.;
-                if ( vrt[v[d]].nVrtTri >= MAX_VRT_TRI ) {
-                    cout << "ERROR: Too many triangles (" << vrt[v[d]].nVrtTri <<") for Vertex " << v[d] << '\n';
-                    exit(EXIT_FAILURE);
-                }
-                
+                if ( vrt[v[d]].nVrtTri >= MAX_VRT_TRI )
+                    GBMError("Triangulation::addTris",
+                             "Too many triangles (" +to_string(vrt[v[d]].nVrtTri)+") for Vertex " +to_string(v[d]),
+                             GBMERR_MAXVRTTRI);
                 vrt[v[d]].tri[vrt[v[d]].nVrtTri]=itri_loc;
                 vrt[v[d]].nVrtTri++;
             }
@@ -191,9 +192,9 @@ int Triangulation::addTris(int it, TetraType *t){
                            to_string(vrt[e->vrt[1]].p[0])+","+
                            to_string(vrt[e->vrt[1]].p[1])+","+
                            to_string(vrt[e->vrt[1]].p[2])+")-(",
-                           GBM_ERROR_MAXEDGTRI);
+                           GBMERR_MAXEDGTRI);
                 GBMError("Triangulation::addTris",string("Too many Triangles (" +to_string(dum) +") on Edge " +to_string(tri[itri_loc].edg[d])),
-                         GBM_ERROR_MAXEDGTRI);
+                         GBMERR_MAXEDGTRI);
             }
             edg[tri[itri_loc].edg[d]].tri[dum]=itri_loc;
             edg[tri[itri_loc].edg[d]].nEdgTri++;
@@ -236,10 +237,10 @@ int Triangulation::addEdges(int it, TetraType *t){
                 for ( int it_loc=0; it_loc<edg[iEdg].nEdgTtr; ++it_loc) {
                     iTtr_loc=edg[iEdg].ttr[it_loc];
                     if (afind(t->a,t->n_adjacent,iTtr_loc) == t->n_adjacent) {
-                        if ( t->n_adjacent >= MAX_TTR_ADJ ) {
-                            cout << "ERROR: Too many adjacent tetras (" << t->n_adjacent << ") on Tetra " << iTtr_loc;
-                            exit(EXIT_FAILURE);
-                        }
+                        if ( t->n_adjacent >= MAX_TTR_ADJ )
+                            GBMError("Triangulation::addEdges",
+                                     "Too many adjacent tetras (" +to_string(t->n_adjacent)+") on Tetra "
+                                     +to_string(iTtr_loc),GBMERR_INDEX);
                         t->a[t->n_adjacent]=iTtr_loc;
                         t->n_adjacent++;
                     }
@@ -247,18 +248,18 @@ int Triangulation::addEdges(int it, TetraType *t){
                     t_other = &ttr[iTtr_loc];
                     
                     if ( afind(t_other->a,t_other->n_adjacent,it) == t_other->n_adjacent ) {
-                        if ( t_other->n_adjacent >= MAX_TTR_ADJ ) {
-                            cout << "ERROR: Too many adjacent tetras (" << t_other->n_adjacent << ") on Tetra " << iTtr_loc;
-                            exit(EXIT_FAILURE);
-                        }
+                        if ( t_other->n_adjacent >= MAX_TTR_ADJ )
+                            GBMError("Triangulation::addEdges",
+                                     "Too many adjacent tetras (" +to_string(t_other->n_adjacent)+") on Tetra" + to_string(iTtr_loc),GBMERR_INDEX);
                         t_other->a[t_other->n_adjacent]=it;
                         t_other->n_adjacent++;
                     }
                 }
-                if (edg[iEdg].nEdgTtr >= MAX_EDG_TTR ) {
-                    cout << "ERROR: Too many Tetras (" << edg[iEdg].nEdgTtr << ") on Edge " << iEdg << '\n';
-                    exit(EXIT_FAILURE);
-                }
+                if (edg[iEdg].nEdgTtr >= MAX_EDG_TTR )
+                    GBMError("Triangulation::addEdges",
+                             "Too many Tetras (" +to_string(edg[iEdg].nEdgTtr)+") on Edge "+to_string(iEdg),
+                             GBMERR_MAXEDGTTR);
+                             
                 edg[iEdg].ttr[edg[iEdg].nEdgTtr]=it;
                 edg[iEdg].nEdgTtr++;
                 t->edg[iEdg_loc]=iEdg;
@@ -340,7 +341,12 @@ int Triangulation::addVertex(double p[4],bool halo) {
     
     vrt.push_back(v);
     for (int id=0; id<3; ++id) vrt[i].p[id]=p[id];
-    vrt[i].e=p[3];
+    
+    if ( p[3] > 0 )
+        vrt[i].e=p[3];
+    else
+        vrt[i].e=p[0]*p[0] + p[1]*p[1] + p[2]*p[2];
+    
     vrt[i].idx=int(vrt.size()); // 0-based vertex indices
     vrt[i].bdy=false;
     vrt[i].nVrtEdg=0;
@@ -365,13 +371,8 @@ int Triangulation::addVertex(double p[4],bool halo) {
 
 int Triangulation::isTetra(int p[4], int start, int end){
     for(int it=start; it<(end==-1? nTtr : end); ++it)
-        if (ttr[it].vrt[0]!=p[0] )
-            continue;
-        else if ( ttr[it].vrt[1]!=p[1] )
-            continue;
-        else if ( ttr[it].vrt[2]!=p[2] )
-            continue;
-        else if ( ttr[it].vrt[3]==p[3] )
+        if (ttr[it].vrt[0]==p[0] and ttr[it].vrt[1]==p[1] and
+            ttr[it].vrt[2]==p[2] and ttr[it].vrt[3]==p[3] )
             return it;
     return -1;
 }
@@ -413,6 +414,7 @@ int Triangulation::addTetra(int p[4],bool halo){
         }
         pv->ttr[pv->nVrtTtr]=iTtr;
         pv->nVrtTtr++;
+        t.n[i]=-1; 
     }
     t.vol=tetraVolume(vrt[t.vrt[0]].p, vrt[t.vrt[1]].p,
                            vrt[t.vrt[2]].p, vrt[t.vrt[3]].p);
@@ -423,15 +425,6 @@ int Triangulation::addTetra(int p[4],bool halo){
     ttr.push_back(t);
 
     return int(ttr.size());
-}
-
-void Triangulation::addHalo(){
-    vector<TriType *>::iterator sfc_it;
-    
-    for (sfc_it = hul.begin(); sfc_it!=hul.end(); ++sfc_it) {
-        
-    }
-    return;
 }
 
 void Triangulation::writeGrid(string grid_file, string grid_format) {
@@ -583,6 +576,10 @@ void Triangulation::writeGrid(string grid_file, string grid_format) {
         att[1]="Float32";att[3]="Tetrahedron_Volume";
         vtkXMLWriteDataArray(gfile, att, nTtr, data);
             
+        att[1]="Int32"; att[3]="Tetrahedron_neighbors";
+        for (it=0; it<nTtr; ++it)
+            idata[it]=ttr[it].n_neighbor;
+        vtkXMLWriteDataArray(gfile, att, nTtr, idata);
         
         gfile << "</CellData>\n";
 
@@ -779,11 +776,10 @@ void Triangulation::setAtlas(string fname){
     return;
 }
 
-void Triangulation::TtrSplines_lhs(){
-    int iTtr, id,id2,nd,iptr;
+void Triangulation::TtrSplinesAlloc(){
+    int id,id2,iptr;
     int QRsize_mat, QRsize_vec, QRsize_bare;
-    VertexType *v;
-    nd=4;
+    const int nd=4;
     //
     GBMLog("Preparing Left-Hand Side for Spline Calculations (nd="+to_string(nd)+")");
     //
@@ -811,7 +807,12 @@ void Triangulation::TtrSplines_lhs(){
         QRSplines_c[id] = &(QRSplines_bare[iptr]);  iptr += nTtr;}
     for ( id=0; id<nd; ++id ) {
         QRSplines_d[id] = &(QRSplines_bare[iptr]);  iptr += nTtr;}
-    
+}
+
+void Triangulation::TtrSplinesLHS(){
+    int iTtr, id;
+    VertexType *v;
+    const int nd=4;
     // calculate spline
     for (iTtr=0; iTtr<nTtr; ++iTtr) {
         for (id=0;id<nd; ++id) {
@@ -827,7 +828,7 @@ void Triangulation::TtrSplines_lhs(){
     return;
 }
 
-void Triangulation::TtrSplines_rhs(double *data){
+void Triangulation::TtrSplinesRHS(double *data){
     // data contains vertex data;
     int iTtr,id,nd=4;
 
@@ -836,6 +837,7 @@ void Triangulation::TtrSplines_rhs(double *data){
             QRSplines_b[id][iTtr] = data[ttr[iTtr].vrt[id]];
 
     m_in_qrsolv(QRSplines_a, nd, nd, nTtr, QRSplines_c, QRSplines_d, QRSplines_b);
+    
     return;
 }
 
@@ -869,7 +871,7 @@ void Triangulation::ConstructHull(){
 }
 
 void Triangulation::ConstructHalo(){
-    double x[3],x2[3],s[3],tmp1[4];
+    double x[4],x2[3],s[3],tmp1[4];
     vector<VertexType> hVrt;
     vector<EdgeType>   hEdg;
     vector<TetraType>  hTtr;
@@ -883,9 +885,12 @@ void Triangulation::ConstructHalo(){
     int dimCount=0;
     bool per[3],per_loc[3];
     
+    GBMLog("Constructing Halo Region");
+    
     nVrt_inner=nVrt;
     nTtr_inner=nTtr;
 
+    tmp1[3]=-1.;
     for (id=0;id<3;++id)
         s[id] = fabs(box[2*id+1]-box[2*id]);
         
@@ -903,6 +908,7 @@ void Triangulation::ConstructHalo(){
                         ( x2[1]-x[1]==0 or fabs(x2[1]-x[1])==s[1]) and
                         ( x2[2]-x[2]==0 or fabs(x2[2]-x[2])==s[2]) ) {
                 
+                        // Any point on boundary (includes edges and corners)
                         for ( ie=0; ie<vrt[iv2].nVrtEdg; ++ie) { // loop over edges corresponding to p
                             if ( (v_add=edg[vrt[iv2].edg[ie]].vrt[0]) == iv2 )
                                 v_add=edg[vrt[iv2].edg[ie]].vrt[1];
@@ -919,12 +925,11 @@ void Triangulation::ConstructHalo(){
                         
                         // Now treat the edge points (2 periodic dimensions)
                         dimCount=0;
-                        for ( id2=0; id2<3; ++id2) {
+                        for ( id2=0; id2<3; ++id2)
                             if ( fabs(x2[id2]-x[id2])==s[id2] and dimCount < 2 ) {
                                 per[id2]=true;
                                 dimCount++;
                             } else per[id2]=false;
-                        }
                         
                         if ( dimCount == 2 ) {
                             for ( ie=0; ie<vrt[iv2].nVrtEdg; ++ie) {
@@ -947,9 +952,9 @@ void Triangulation::ConstructHalo(){
                                 newTtr.push_back(vector<int>(ttr_new,ttr_new+4));
                             }
                         }
-                        
                     }
-                }
+                } // for ( id=0; id<3; ++id)
+                
                 // Now treat the corner points (3 periodic dimensions)
                 for ( id2=0; id2<3; ++id2)
                     if ( fabs(x2[id2]-x[id2])==s[id2] ) per[id2]=true;
@@ -970,15 +975,34 @@ void Triangulation::ConstructHalo(){
                         newTtr.push_back(vector<int>(ttr_new,ttr_new+4));
                     }
                 }
-            }
+            } // for (iv2=0; iv2<nVrt_inner; ++iv2)
             ++nBdy;
-        }
-    }
-    
+        } // if (vrt[iv].bdy)
+    } // for (iv=0; iv<nVrt_inner; ++iv)
+ 
     // Finally, add the Tetrahedrons for the halo
-    for ( it=0; it<newTtr.size(); ++it)
-        if ( isTetra(newTtr[it].data(),nTtr_inner) < 0 )
-            nTtr=addTetra(newTtr[it].data(),true);
+    {   // performance-critical part, therefore instrumented.
+        uint64_t ttime1=0,ttime2=0,ctime=0;
+        int iloc;
+        for ( it=0; it<newTtr.size(); ++it){
+            ctime=current_time();
+            // we know, it is on the halo, so we can skip the inner part when searching
+            iloc = isTetra(newTtr[it].data(),nTtr_inner);
+            ttime1 += current_time()-ctime;
+            if ( iloc  < 0 ) {
+                ctime=current_time();
+                nTtr=addTetra(newTtr[it].data(),true);
+                ttime2+= current_time()-ctime;
+            }
+        }
+        GBMLog("...timing for isTetra: " +to_string(ttime1/1.e3) +" ms");
+        GBMLog("...timing for addTetra:" +to_string(ttime2/1.e3) +" ms");
+    }
+    // Recalculate neighbor topology --> makes halo known to other nodes
+    fixNeighbors();
+    
+    GBMLog("...Constructed Halo containing " +to_string(nVrt-nVrt_inner) + "vertices." );
+    
     return;
 }
 
@@ -1014,10 +1038,10 @@ void Triangulation::ttrPeriodic(int it, int iv2, bool per[3], int *ttr_new){
     // find first vertex
     if (( tmp[0][0] < box[0] or tmp[0][0] > box[1] ) or
         ( tmp[0][1] < box[2] or tmp[0][1] > box[3] ) or
-        ( tmp[0][2] < box[4] or tmp[0][2] > box[5] ) )   // point lies on halo
-        ttr_new[0]=isVertex(tmp[0],nVrt_inner);
-    else                                                   // point in interior
-        ttr_new[0]=isVertex(tmp[0]);
+        ( tmp[0][2] < box[4] or tmp[0][2] > box[5] ) )
+        ttr_new[0]=isVertex(tmp[0],nVrt_inner);  // point lies on halo
+    else
+        ttr_new[0]=isVertex(tmp[0],0,nVrt_inner);// point in interior
     
     
     for ( iv=1;iv<4; ++iv) {
@@ -1051,9 +1075,8 @@ void Triangulation::ttrPeriodic(int it, int iv2, bool per[3], int *ttr_new){
         }
     
         if ( ttr_new[iv] < 0 )
-            GBMError("Triangulation::ttrPeriodic","Vertex for Periodic Tetrahedron not found",GBM_ERROR_HALO);
+            GBMError("Triangulation::ttrPeriodic","Vertex for Periodic Tetrahedron not found",GBMERR_HALO);
     }
     sort4(ttr_new);
-    
     return ;
 }

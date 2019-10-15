@@ -51,7 +51,7 @@ int main(int argc, const char * argv[]) {
     gbm.tri.writeGrid("/Users/zrick/WORK/research_projects/GBM/test.vtu.xml","XML_VTK");
     
     GBMLog("FINISHED GBM on " + gbmTime() + "====================================================\n\n");
-    
+      
     return 0;
 }
 

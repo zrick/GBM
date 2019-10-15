@@ -12,12 +12,15 @@
 #include <exception>
 #include "utils.hpp"
 
-#define GBM_ERROR_INDEX       11
-#define GBM_ERROR_DIM         12
-#define GBM_ERROR_NAMELIST    13
+#define GBMERR_INDEX       11
+#define GBMERR_DIM         12
+#define GBMERR_NAMELIST    13
 //
-#define GBM_ERROR_MAXEDGTRI   21
-#define GBM_ERROR_HALO        22
+#define GBMERR_MAXEDGTRI   21
+#define GBMERR_MAXVRTTRI   22
+#define GBMERR_MAXEDGTTR   23
+#define GBMERR_HALO        24
+#define GBMERR_TOPOLOGY    25
 //
-#define GBM_ERROR_UNDEVELOPED 99
+#define GBMERR_UNDEVELOPED 99
 #endif /* errors_hpp */

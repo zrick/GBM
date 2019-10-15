@@ -48,7 +48,7 @@ void Namelist::read_namelist(string s){
             line=trim(line.erase(line.find_first_of(']')).erase(0,1));
 
             if ( find(grpNames,line) < grpNames.size() )
-                GBMError("Namelist::read_namelist", "Group \'" + line + "\' exists already",GBM_ERROR_NAMELIST);
+                GBMError("Namelist::read_namelist", "Group \'" + line + "\' exists already",GBMERR_NAMELIST);
 
             grp.push_back(Group(line));
             grpNames.push_back(line); 
@@ -84,7 +84,7 @@ string Namelist::getValStr(string group,string var){
     
     iGrp=find(grpNames,group);
     if ( iGrp >= grpNames.size() )
-        GBMError("Namelist::getValStr", "Group \'" + group + "\' not found in grpNames of len " + to_string( grpNames.size()), GBM_ERROR_NAMELIST);
+        GBMError("Namelist::getValStr", "Group \'" + group + "\' not found in grpNames of len " + to_string( grpNames.size()), GBMERR_NAMELIST);
 
     p_grp=&grp[iGrp];
     p_grp->getAttribute(var, val_str);
@@ -102,8 +102,8 @@ void Namelist::getList_dbl(string group, string var,double *list, const int nmax
     vector<string> s_split;
     string_split(s, s_split,',');
     if ( s_split.size() > nmax ) {
-        GBMWarning("Namelist::getList_dbl", "Found more values in \'" + var +"\' of group \'" + group + "\' than needed",GBM_ERROR_NAMELIST);
-        GBMWarning("Namelist::getList_dbl", "Ignoring " +to_string(s_split.size()-nmax) + "values.",GBM_ERROR_NAMELIST);
+        GBMWarning("Namelist::getList_dbl", "Found more values in \'" + var +"\' of group \'" + group + "\' than needed",GBMERR_NAMELIST);
+        GBMWarning("Namelist::getList_dbl", "Ignoring " +to_string(s_split.size()-nmax) + "values.",GBMERR_NAMELIST);
     }
     
     for ( i=0; i<nmax; ++i)
@@ -114,19 +114,19 @@ void Namelist::getList_dbl(string group, string var,double *list, const int nmax
 
 
 void Namelist::getList_int(string group, string var,int *list, const int nmax){
-    GBMError("Namelist:getList_int","Not Implemented",GBM_ERROR_UNDEVELOPED);
+    GBMError("Namelist:getList_int","Not Implemented",GBMERR_UNDEVELOPED);
     return; 
 }
 
 double Namelist::getVal_dbl(string group,string var) {
     if ( ! hasVal(group,var) )
-        GBMError("Namelist:getVal_dbl", string("No default for [" + group +"]:" + var), GBM_ERROR_NAMELIST);
+        GBMError("Namelist:getVal_dbl", string("No default for [" + group +"]:" + var), GBMERR_NAMELIST);
     return atof(getValStr(group,var).c_str());
 }
                  
 string Namelist::getVal_str(string group,string var) {
     if ( !hasVal(group,var) )
-        GBMError("Namelist:getVal_dbl", string("No default for [" + group +"]:" + var), GBM_ERROR_NAMELIST);
+        GBMError("Namelist:getVal_dbl", string("No default for [" + group +"]:" + var), GBMERR_NAMELIST);
     return getValStr(group,var);
 }
 
@@ -134,7 +134,7 @@ bool Namelist::getVal_bool(string group, string var) {
     string s=getVal_str(group,var);
 
     if ( !hasVal(group,var) )
-        GBMError("Namelist:getVal_dbl", string("No default for [" + group +"]:" + var), GBM_ERROR_NAMELIST);
+        GBMError("Namelist:getVal_dbl", string("No default for [" + group +"]:" + var), GBMERR_NAMELIST);
     
     transform(s.begin(),s.end(),s.begin(),::tolower);
 
@@ -143,7 +143,7 @@ bool Namelist::getVal_bool(string group, string var) {
     if ( s.compare("f")==0 || s.compare("false")==0|| s.compare("1")==0 || s.compare(".false.")==0 )
         return false;
     else {
-        GBMError("Namelist::getVal_bool", "cannot guess bool from \'" + s + "\' for variable \'" + var  +"\'",GBM_ERROR_NAMELIST);
+        GBMError("Namelist::getVal_bool", "cannot guess bool from \'" + s + "\' for variable \'" + var  +"\'",GBMERR_NAMELIST);
         exit(EXIT_FAILURE);
     }
 }

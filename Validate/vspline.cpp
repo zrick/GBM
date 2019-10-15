@@ -27,22 +27,23 @@ int main(int argc, const char * argv[]) {
         
         Triangulation tri((char *)&testGrid.c_str()[0]);
         
-        dat_v = (double *)malloc(tri.nVrt*sizeof(double));
-        dat_t = (double *)malloc(tri.nTtr*sizeof(double));
+        dat_v = (double *)malloc(tri.nVrt_inner*sizeof(double));
+        dat_t = (double *)malloc(tri.nTtr_inner*sizeof(double));
     
-        for (int i=0;i<tri.nVrt;++i)
+        for (int i=0;i<tri.nVrt_inner;++i)
             dat_v[i]=test_func(tri.vrt[i].p,&k[0]);
     
-        for (int i=0;i<tri.nTtr;++i)
+        for (int i=0;i<tri.nTtr_inner;++i)
             dat_t[i]=0.;
     
-        tri.TtrSplines_lhs();
-        tri.TtrSplines_rhs(dat_v);
+        tri.TtrSplinesAlloc();
+        tri.TtrSplinesLHS();
+        tri.TtrSplinesRHS(dat_v);
         tri.CentroidSplines(dat_t);
     
         l2=0;
         linf=0;
-        for (int iTtr=0; iTtr<tri.nTtr; ++iTtr){
+        for (int iTtr=0; iTtr<tri.nTtr_inner; ++iTtr){
             double tmp,tmp2;
             tmp2= test_func(tri.ttr[iTtr].c,k);
             tmp = fabs(dat_t[iTtr] - tmp2);

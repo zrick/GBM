@@ -109,6 +109,7 @@ void GBMWarning(string loc, string msg, int stat){
     os << "GBM Warning" << stat << "(" << loc << "): " << msg;
     cout <<"GBM Warning" << stat << "(" << loc << "): " << msg << std::endl;
     os.close();
+    return;
 }
 
 void GBMLog(string msg){

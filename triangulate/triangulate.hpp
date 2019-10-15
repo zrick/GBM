@@ -51,8 +51,9 @@ public:
     void ConstructHull();
     void ConstructHalo();
 
-    void TtrSplines_lhs();
-    void TtrSplines_rhs(double *data);
+    void TtrSplinesAlloc(); 
+    void TtrSplinesLHS();
+    void TtrSplinesRHS(double *data);
     void CentroidSplines(double *v); 
     
     // Data Members
@@ -79,8 +80,9 @@ private:
     int addTetra(int p[4],         bool halo=false);
     int addEdges(int it, TetraType *t);
     int addTris(int it, TetraType *t);
-    void addHalo();
 
+    void fixNeighbors();
+    
     int isTetra(int p[4], int start=0, int end=-1);
     int isTriangle(int v[3]);
     int isEdge(int v0, int v1);
