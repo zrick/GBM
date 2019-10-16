@@ -9,11 +9,15 @@
 int main(int argc, const char * argv[]) {
     
     double *dat_v, *dat_t;
-    double k[3],l2,linf,l2_ref;
+    double k[3],l2,linf,l2_ref,l2_cube, linf_cube, l2_ref_cube,vref,vfil;
     string ofile, gridFormat;
     string testGrid,rundir;
-    int testList[] = {2,4,6,8,10,12,16};
-    int nTest = 7;
+    int testList[] = {2,3,4,6,8,10,12,16,20,30};
+    int nTest = 10;
+    int sType = SPLINE_O2_LOCAL;
+    int ii,jj,kk,nn;
+    double x0[3], ***val3d;
+    bool p[3]={false,false,false};
 
     Namelist nl("/Users/zrick/WORK/research_projects/GBM/vspline.nml");
     nl.getList_dbl("Valid","k_test",&k[0],3);
@@ -25,24 +29,26 @@ int main(int argc, const char * argv[]) {
         testGrid += std::to_string(testList[iTest]);
         GBMLog(string(to_string(iTest) + ":" +testGrid));
         
-        Triangulation tri((char *)&testGrid.c_str()[0]);
+        Triangulation tri((char *)&testGrid.c_str()[0],p);
         
-        dat_v = (double *)malloc(tri.nVrt_inner*sizeof(double));
-        dat_t = (double *)malloc(tri.nTtr_inner*sizeof(double));
+        dat_v = (double *)malloc(tri.nVrt*sizeof(double));
+        dat_t = (double *)malloc(tri.nTtr*sizeof(double));
     
-        for (int i=0;i<tri.nVrt_inner;++i)
+        for (int i=0;i<tri.nVrt;++i)
             dat_v[i]=test_func(tri.vrt[i].p,&k[0]);
     
-        for (int i=0;i<tri.nTtr_inner;++i)
+        for (int i=0;i<tri.nTtr;++i)
             dat_t[i]=0.;
     
-        tri.TtrSplinesAlloc();
-        tri.TtrSplinesLHS();
-        tri.TtrSplinesRHS(dat_v);
-        tri.CentroidSplines(dat_t);
+        tri.TtrSplinesAlloc(sType);
+        tri.TtrSplinesLHS(sType);
+        tri.TtrSplinesRHS(sType,dat_v);
+        tri.CentroidSplines(sType,dat_t);
     
-        l2=0;
-        linf=0;
+        l2=0.;
+        l2_ref=0.;
+        linf=0.;
+        
         for (int iTtr=0; iTtr<tri.nTtr_inner; ++iTtr){
             double tmp,tmp2;
             tmp2= test_func(tri.ttr[iTtr].c,k);
@@ -51,7 +57,46 @@ int main(int argc, const char * argv[]) {
             l2_ref += tmp2*tmp2;
             linf = ( tmp>linf ) ? tmp : linf;
         }
-        cout << testList[iTest] << "," << l2/tri.nTtr << "," << l2/l2_ref << "," << linf << std::endl;
+        
+        nn=testList[iTest];
+        val3d= (double ***) malloc ( (nn+1) * sizeof(double**) );
+        for (ii=0; ii<=nn; ++ii) {
+            x0[0]=ii/double(nn);
+            val3d[ii] = (double **) malloc ( (nn+1)*sizeof(double *));
+            for (jj=0;jj<=nn; ++jj) {
+                val3d[ii][jj] = (double *) malloc( (nn+1)*sizeof(double));
+                x0[1]=jj/double(nn);
+                for ( kk=0; kk<=nn; ++kk) {
+                    x0[2] = kk/double(nn);
+                    val3d[ii][jj][kk] = test_func(x0,k);
+                }
+            }
+        }
+
+        l2_cube=0.;
+        l2_ref_cube=0.;
+        linf_cube=0.;
+        for (ii=0; ii<nn; ++ii) {
+            x0[0]=(ii+0.5)/double(nn);
+            for (jj=0;jj<nn; ++jj) {
+                x0[1]=(jj+0.5)/double(nn);
+                for ( kk=0; kk<nn; ++kk) {
+                    x0[2] = (kk+0.5)/double(nn);
+                    vref=test_func(x0,k);
+                    vfil=(val3d[ii  ][jj  ][kk] + val3d[ii  ][jj  ][kk+1]
+                        +val3d[ii  ][jj+1][kk] + val3d[ii  ][jj+1][kk+1]
+                        +val3d[ii+1][jj  ][kk] + val3d[ii+1][jj  ][kk+1]
+                        +val3d[ii+1][jj+1][kk] + val3d[ii+1][jj+1][kk+1])/8.;
+                    l2_cube += (vfil-vref)*(vfil-vref);
+                    linf_cube = fabs(vfil-vref) > linf_cube? fabs(vfil-vref) : linf_cube;
+                    l2_ref_cube += vref*vref;
+                }
+            }
+        }
+        GBMLog(to_string(testList[iTest])+","+to_string(l2/tri.nTtr)+","+to_string(l2/l2_ref)+","+to_string(linf)+
+               "|"+to_string(l2_cube/(nn*nn*nn))+","+to_string(l2_cube/l2_ref_cube)+","+to_string(linf_cube));
+        cout << testList[iTest] << " " << l2/tri.nTtr << " " <<  l2/l2_ref << " " << linf << "|";
+        cout << testList[iTest] << " " << l2_cube/(nn*nn*nn) << " " <<  l2_cube/l2_ref_cube << " " << linf_cube << std::endl;
         writeSpline_test(ofile,&tri, dat_v, dat_t);
         
         free(dat_v);

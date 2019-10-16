@@ -15,7 +15,11 @@ int main(int argc, const char * argv[]) {
     double *b, *c, *d, *lhs, **bm,**cm, **dm, **lhsm,  **bO, **cO, **dO, **lhsO;
     double dum,sum, max_res;
     int i,j,l,j_srt,j_end,sing;
+    char cbuf[256];
     uint64_t t_srt;
+    
+    GBMLog("====================================================\nSTARTING" + string(argv[0]) +"on " + gbmTime());
+
     
     a=nullptr; b=nullptr; c=nullptr; d=nullptr;
     lhs=nullptr; rhs=nullptr;
@@ -24,7 +28,7 @@ int main(int argc, const char * argv[]) {
     nm=1000;            // number of problems to solve
     n_block=int(n/2);   // width of stencil 
     
-    cout << "ALLOCATING AND INITIALIZING ARRAYS\n";
+    GBMLog("ALLOCATING AND INITIALIZING ARRAYS");
     
     am  =(double***) malloc (n*sizeof(double **));
     rhsm=(double***) malloc (n*sizeof(double **));
@@ -125,7 +129,7 @@ int main(int argc, const char * argv[]) {
         }
     }
     
-    cout << "INITIALIZING \n";
+    GBMLog("INITIALIZING Arryas");
     
     for (j=0; j<n; ++j) {
         b[j]=1.0 ;
@@ -155,15 +159,14 @@ int main(int argc, const char * argv[]) {
         }
     }
     
-    cout <<"\nTesting QR decomposition for single-problem solver (n=" << n <<")\n";
-    cout <<"============================================================\n";
+    GBMLog("Testing QR decomposition for single-problem solver (n="+to_string(n)+"");
     t_srt=current_time();
     sing=qrdcmp(a,n,n,c,d);
-    cout << "qrdcmp time elapsed: "<<(current_time()-t_srt)/1000. << "ms \n";
+    GBMLog("...qrdcmp time elapsed: "+to_string((current_time()-t_srt)/1000.)+"ms");
     
     t_srt=current_time();
     qrsolv(a,n,n,c,d,b);
-    cout <<"qrsolv time elapsed: "<<(current_time()-t_srt)/1000. << "ms \n";
+    GBMLog("...qrsolv time elapsed: "+to_string((current_time()-t_srt)/1000.)+"ms");
 
 
     // Check single-problem solver
@@ -175,27 +178,30 @@ int main(int argc, const char * argv[]) {
             sum += rhs[i][j]*b[j];
         dum=fabs(sum-lhs[i]);
         if ( dum > 1e-12 )
-            cout <<"ERROR encountered in line " << i << "; Residual:" << dum << ' ' << lhs[i] << '\n';
+            GBMError("vlinear",
+                     "In line " +to_string(i) + "; Residual:" +to_string(dum) +" " +to_string(lhs[i]),
+                     GBMERR_RESIDUAL);
         max_res = dum > max_res? dum : max_res;
     }
-    cout <<"MAXIMUM RESIDUAL PER LINE (single-problem solver):" <<max_res<<'\n';
+    sprintf(cbuf,"%7.4g",max_res);
+    GBMLog("...MAXIMUM RESIDUAL PER LINE (single-problem solver):"+string(cbuf));
+    cout << "Residual (Single Problem):      "<<cbuf<<std::endl;
     
     // MULTI PROBLEM SOLVER WITH INNER LOOP
-    cout <<"\nTesting QR decomposition for multi-problem solver; inner index (nm="<<nm<<")\n";
-    cout <<"===========================================================================\n";
+    GBMLog("Testing QR decomposition for multi-problem solver; inner index (nm="+to_string(nm)+")");
     t_srt=current_time();
     sing=m_in_qrdcmp(am,n,n,nm,cm,dm);
-    cout << "m_in_qrdcmp time elapsed: "<<(current_time()-t_srt)/1000. << "ms \n";
-    if ( sing > 0. ) {
-        cout << "ERROR: Singularity encountered in qr decomposition \n";
-        exit(EXIT_FAILURE);
-    }
+    GBMLog("...m_in_qrdcmp time elapsed: "+to_string((current_time()-t_srt)/1000.) + " ms");
+    if ( sing > 0. )
+       GBMError(string(argv[0]),
+                "Singularity encountered in qr decomposition",
+                GBMERR_SINGULARITY);
     
     t_srt=current_time();
     m_in_qrsolv(am,n,n,nm,cm,dm,bm);
-    cout << "m_in_qrsolv time elapsed: "<<(current_time()-t_srt)/1000. << "ms \n";
+    GBMLog("...m_in_qrsolv time elapsed: "+to_string((current_time()-t_srt)/1000.)+ " ms");
 
-    // Check multi-problem solver
+    // Check multi-problem solver; Inner Loope
     max_res=0.;
     for (l=0;l<nm;++l) {
         for(i=0;i<n;++i){
@@ -208,23 +214,21 @@ int main(int argc, const char * argv[]) {
             max_res = dum > max_res? dum : max_res;
         }
     }
-    cout <<"MAXIMUM RESIDUAL PER LINE (multi-problem solver):" << max_res <<"\n\n";
-
+    sprintf(cbuf,"%7.4g",max_res);
+    GBMLog("MAXIMUM RESIDUAL PER LINE (multi-problem solver):" +string(cbuf));
+    cout << "Residual (Inner Multi Problem): "<<cbuf<<std::endl;
 
     // MULTI PROBLEM SOLVER WITH OUTER LOOP
-    cout <<"\nTesting QR decomposition for multi-problem solver; outer index (nm="<<nm<<")\n";
-    cout <<"===========================================================================\n";
+    GBMLog("\nTesting QR decomposition for multi-problem solver; outer index (nm="+to_string(nm)+")");
     t_srt=current_time();
     sing=m_out_qrdcmp(aO,n,n,nm,cO,dO);
-    cout << "m_out_qrdcmp time elapsed: "<<(current_time()-t_srt)/1000. << "ms \n";
-    if ( sing > 0. ) {
-        cout << "ERROR: Singularity encountered in qr decomposition \n";
-        exit(EXIT_FAILURE);
-    }
+    GBMLog("... m_out_qrdcmp time elapsed: "+to_string((current_time()-t_srt)/1000.) + " ms");
+    if ( sing > 0. )
+        GBMError(string(argv[0]),"Singularity encountered in qr decomposition",GBMERR_SINGULARITY);
     
     t_srt=current_time();
     m_out_qrsolv(aO,n,n,nm,cO,dO,bO);
-    cout << "m_out_qrsolv time elapsed: "<<(current_time()-t_srt)/1000. << "ms \n";
+    GBMLog("...m_out_qrsolv time elapsed: "+to_string((current_time()-t_srt)/1000.) + " ms");
     
     // Check multi-problem solver
     max_res=0.;
@@ -235,12 +239,15 @@ int main(int argc, const char * argv[]) {
                 sum += rhsO[l][i][j]*bO[l][j];
             dum=fabs(sum-lhsO[l][i]);
             if ( dum > 1e-12 )
-                cout <<"ERROR encountered in line " << i << "; Residual:" << dum << ' ' << lhsO[l][i] << '\n';
+                GBMError(string(argv[0]),
+                         "In line " + to_string(i) + "; Residual:" + to_string(dum) + " " +to_string(lhsO[l][i]),
+                         GBMERR_RESIDUAL);
             max_res = dum > max_res? dum : max_res;
         }
     }
-    cout <<"MAXIMUM RESIDUAL PER LINE (multi-problem solver):" << max_res <<"\n\n";
+    sprintf(cbuf,"%7.4g",max_res);
+    GBMLog("...MAXIMUM RESIDUAL PER LINE (multi-problem solver):" +string(cbuf));
+    cout <<"Residual (Outer Multi Problem): " << cbuf << std::endl;
 
-    
     exit(EXIT_SUCCESS);
 }

@@ -82,7 +82,8 @@ typedef struct VertexType{
     int nVrtEdg, nVrtTri, nVrtTtr;
     int kind; 
     bool bdy;
-    bool halo;
+    int halo;      // -1 indicates not on halo, otherwise
+                   // index to the periodic vertex inside the domain 
 } VertexType;
 
 typedef struct EdgeType{
@@ -118,7 +119,8 @@ typedef struct TetraType{
     int n_neighbor;
     int n_adjacent;
     bool bdy;
-    bool halo; 
+    int halo;   // -1 indicates not halo; otherwise, the index
+                // maps to the periodic Tetrahedron inside the domain
 } TetraType;
 
 

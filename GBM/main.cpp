@@ -15,7 +15,7 @@ int main(int argc, const char * argv[]) {
     string nl_name;
     GBM_Data gbm;
         
-    GBMLog("\n\n==============================================\nSTARTING GBM on " + gbmTime());
+    GBMLog("====================================================\nSTARTING " + string(argv[0]) +" on " + gbmTime());
     
     if ( argc >1 ) {
         nl_name=string(argv[1]);
@@ -48,9 +48,10 @@ int main(int argc, const char * argv[]) {
     GBMLog("Surface Area: "+to_string(dum));
     
     gbm.tri.ConstructHalo();
+    //
     gbm.tri.writeGrid("/Users/zrick/WORK/research_projects/GBM/test.vtu.xml","XML_VTK");
     
-    GBMLog("FINISHED GBM on " + gbmTime() + "====================================================\n\n");
+    GBMLog("FINISHED GBM on " + gbmTime() + "====================================================");
       
     return 0;
 }

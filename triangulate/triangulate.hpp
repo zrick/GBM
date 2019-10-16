@@ -51,10 +51,10 @@ public:
     void ConstructHull();
     void ConstructHalo();
 
-    void TtrSplinesAlloc(); 
-    void TtrSplinesLHS();
-    void TtrSplinesRHS(double *data);
-    void CentroidSplines(double *v); 
+    void TtrSplinesAlloc(int sType);
+    void TtrSplinesLHS(int sType);
+    void TtrSplinesRHS(int sType, double *data);
+    void CentroidSplines(int sType, double *v); 
     
     // Data Members
     int nDim, nVrt, nEdg, nTri, nTtr, nHul;
@@ -74,10 +74,10 @@ private:
     void read_mesh(char *fname);
     void construct_normal(TetraType *t, TriType tri_loc, int ittr_loc);
 
-    int addVertex(istringstream &l,bool halo=false);
-    int addVertex(double p[3],     bool halo=false);
-    int addTetra(istringstream &l, bool halo=false);
-    int addTetra(int p[4],         bool halo=false);
+    int addVertex(istringstream &l,int halo=-1);
+    int addVertex(double p[3],     int halo=-1);
+    int addTetra(istringstream &l, int halo=-1);
+    int addTetra(int p[4],         int halo=-1);
     int addEdges(int it, TetraType *t);
     int addTris(int it, TetraType *t);
 
@@ -91,11 +91,14 @@ private:
     void ttrPeriodic(int it, int iv, int idim, int *ttr_new);
     void ttrPeriodic(int it, int iv2, bool per[3], int *ttr_new);
 
-    double ***QRSplines_a;
-    double **QRSplines_b;
-    double **QRSplines_c;
-    double **QRSplines_d;
-    double *QRSplines_bare;
+    double ***QRSplines_a[MAX_SPLINES];
+    double **QRSplines_b[MAX_SPLINES];
+    double **QRSplines_c[MAX_SPLINES];
+    double **QRSplines_d[MAX_SPLINES];
+    double *QRSplines_bare[MAX_SPLINES];
+    
+    int TtrSplinesND(int sType);
+
     
     bool periodic[3]; 
 };

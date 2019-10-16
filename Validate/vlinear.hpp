@@ -14,6 +14,7 @@
 #include <math.h>
 
 #include "utils.hpp"
+#include "io.hpp"
 #include "linear.hpp"
 #include "constants.h"
 #endif /* vlinear_h */

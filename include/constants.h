@@ -16,9 +16,9 @@
 // Hard-coded array sizes for memory compactness of triangulation
 #define MAX_CHAR_LEN 512
 
-#define MAX_VRT_TTR 128
-#define MAX_VRT_TRI 128
-#define MAX_VRT_EDG 128
+#define MAX_VRT_TTR 64
+#define MAX_VRT_TRI 64
+#define MAX_VRT_EDG 64
 
 #define MAX_EDG_TRI 32
 #define MAX_EDG_TTR 32
@@ -35,6 +35,7 @@
 
 #define PERIODIC_TOLERANCE 1e-16
 
+#define PERIODIC_NONE -1
 #define PERIODIC_X   1
 #define PERIODIC_Y   2
 #define PERIODIC_Z   4
@@ -42,5 +43,12 @@
 #define PERIODIC_XZ  5
 #define PERIODIC_YZ  6
 #define PERIODIC_XYZ 7
+
+#define SPLINE_NONE     -1
+#define SPLINE_O1       0
+#define SPLINE_O2_LOCAL 1
+#define SPLINE_O2_EDGES 2
+#define SPLINE_O2_CLSTR 3
+#define MAX_SPLINES     4
 
 #endif /* constants_h */
