@@ -21,7 +21,7 @@
 using namespace std;
 
 double test_func(double *p, double *k);
-void writeSpline_test(string grid_file, Triangulation *tri, double *dat_v, double *dat_t);
+void writeSpline_test(int sType, string grid_file, Triangulation *tri, double *dat_v, double *dat_t);
 
 
 

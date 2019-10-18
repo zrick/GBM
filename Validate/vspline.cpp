@@ -13,8 +13,8 @@ int main(int argc, const char * argv[]) {
     string ofile, gridFormat;
     string testGrid,rundir;
     int testList[] = {2,3,4,6,8,10,12,16,20,30};
-    int nTest = 10;
-    int sType = SPLINE_O2_LOCAL;
+    int nTest = 10;//10;
+    int sType = SPLINE_O1;
     int ii,jj,kk,nn;
     double x0[3], ***val3d;
     bool p[3]={false,false,false};
@@ -30,6 +30,10 @@ int main(int argc, const char * argv[]) {
         GBMLog(string(to_string(iTest) + ":" +testGrid));
         
         Triangulation tri((char *)&testGrid.c_str()[0],p);
+        p[0]=true;
+        p[1]=true;
+        p[2]=true; 
+        tri.ConstructHalo();
         
         dat_v = (double *)malloc(tri.nVrt*sizeof(double));
         dat_t = (double *)malloc(tri.nTtr*sizeof(double));
@@ -43,7 +47,7 @@ int main(int argc, const char * argv[]) {
         tri.TtrSplinesAlloc(sType);
         tri.TtrSplinesLHS(sType);
         tri.TtrSplinesRHS(sType,dat_v);
-        tri.CentroidSplines(sType,dat_t);
+        tri.TtrCentroidSplines(sType,dat_t);
     
         l2=0.;
         l2_ref=0.;
@@ -93,16 +97,20 @@ int main(int argc, const char * argv[]) {
                 }
             }
         }
+        
         GBMLog(to_string(testList[iTest])+","+to_string(l2/tri.nTtr)+","+to_string(l2/l2_ref)+","+to_string(linf)+
                "|"+to_string(l2_cube/(nn*nn*nn))+","+to_string(l2_cube/l2_ref_cube)+","+to_string(linf_cube));
         cout << testList[iTest] << " " << l2/tri.nTtr << " " <<  l2/l2_ref << " " << linf << "|";
         cout << testList[iTest] << " " << l2_cube/(nn*nn*nn) << " " <<  l2_cube/l2_ref_cube << " " << linf_cube << std::endl;
-        writeSpline_test(ofile,&tri, dat_v, dat_t);
+        stringstream sstream;
+        sstream << ofile << "_" << testList[iTest] << ".vtu.xml";
+        writeSpline_test(sType, sstream.str(),&tri, dat_v, dat_t);
         
         free(dat_v);
         free(dat_t);
+        
     }
-    
+  
     exit(EXIT_SUCCESS);
     
 }
@@ -112,7 +120,7 @@ double test_func(double *p,double *k){
 }
 
 
-void writeSpline_test(string ofile, Triangulation *tri, double *dat_v, double *dat_t) {
+void writeSpline_test(int sType, string ofile, Triangulation *tri, double *dat_v, double *dat_t) {
 
     double *data;
     int *idata;
@@ -130,7 +138,7 @@ void writeSpline_test(string ofile, Triangulation *tri, double *dat_v, double *d
     idata=(int*)   malloc(data_size*sizeof(int));
     
     vtkXMLFileOpen(ofile,nVrt,nTtr,gfile);
-    
+    cout << "Writing to " << ofile << " nTtr="<<nTtr << std::endl;
     // GRID INFORMATION -- VERTICES
     gfile << "<Points>\n";
     // <DataArray type="Float32" NumberOfComponents="3" format="ascii">
@@ -183,18 +191,23 @@ void writeSpline_test(string ofile, Triangulation *tri, double *dat_v, double *d
     gfile << "<PointData>\n";
     
     // <DataArray type="Float32" Name="value_vrt" format="ascii">
-    att.push_back("type");  att.push_back("Float32");
-    att.push_back("Name");  att.push_back("value_vrt");
-    att.push_back("format");att.push_back("ascii");
-
-    vtkXMLWriteDataArray(gfile,att,nVrt,dat_v);
-
+    
     gfile << "</PointData>\n";
     
     gfile << "<CellData>\n";
-    // <DataArray type="Float32" Name="value_ttr" format="ascii">
-    att[3]="value_ttr";
+    att.clear();
+    att.push_back("type");  att.push_back("Float32");
+    att.push_back("Name");  att.push_back("valueTtr");
+    att.push_back("format");att.push_back("ascii");
+    tri->TtrCentroidSplines(sType, dat_t);
+    vtkXMLWriteDataArray(gfile,att,nTtr,dat_t);
+
+    att[3] = "DxTtr";
+    tri->TtrDerivativeSplines(sType,dat_t);
     vtkXMLWriteDataArray(gfile, att, nTtr, dat_t);
+    
+    
+    
     gfile << "</CellData>\n";
     
     // FOOTER of VTK XML FILE

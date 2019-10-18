@@ -114,7 +114,8 @@ typedef struct TetraType{
     int edg[6]; // Edges
     double c[3];// Centroid point
     double vol; // Volume
-    int n[4];   // Neighbors (sharing a surface)
+    int n[4];     // Neighbors (sharing a surface)
+    int nghVrt[4];// Non-common vertex with the Neighbors in n;
     int a[MAX_TTR_ADJ];  // adjacents (sharing an edge)
     int n_neighbor;
     int n_adjacent;

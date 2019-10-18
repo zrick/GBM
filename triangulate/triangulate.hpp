@@ -54,8 +54,9 @@ public:
     void TtrSplinesAlloc(int sType);
     void TtrSplinesLHS(int sType);
     void TtrSplinesRHS(int sType, double *data);
-    void CentroidSplines(int sType, double *v); 
-    
+    void TtrCentroidSplines(int sType, double *v); 
+    void TtrDerivativeSplines(int sType, double *v);
+
     // Data Members
     int nDim, nVrt, nEdg, nTri, nTtr, nHul;
     int nTtr_inner, nVrt_inner;
@@ -69,7 +70,9 @@ public:
     //  
     vector<TriType *>  hul; // Exterior Surface of Triangulation
     vector<string>   atlas; // Names of atlas regions; first element is atlas file
-    
+
+    int nonCommonVertex(int it1, int it2);
+
 private:
     void read_mesh(char *fname);
     void construct_normal(TetraType *t, TriType tri_loc, int ittr_loc);

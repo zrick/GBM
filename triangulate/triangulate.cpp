@@ -7,13 +7,13 @@
 #include "triangulate.hpp"
 
 Triangulation::Triangulation(){
-    char fname[MAX_CHAR_LEN];
+/*    char fname[MAX_CHAR_LEN];
     
     cout << "Enter name of mesh file containing triangulation:";
     cin >> fname;
     
     read_mesh(fname);
-
+*/
     return; 
 }
 
@@ -118,14 +118,14 @@ void Triangulation::fixNeighbors() {
            
             if ( nEdgCommon == 3) {
                 pt->n[pt->n_neighbor]=i_other;
+                pt->nghVrt[pt->n_neighbor]=nonCommonVertex(it,i_other);
                 pt->n_neighbor++;
-               
                 if ( pt->n_neighbor > 4 )
                     GBMError("Triangulation::fixNeighbor",
                              "Internal-the number of neighbors cannot be larger than 4 Found "+to_string(pt->n_neighbor) +"for Tetra " +to_string(it),
                              GBMERR_TOPOLOGY);
             } else if ( nEdgCommon != 1 )
-                GBMError("Triangulation::fixNieghbor",
+                GBMError("Triangulation::fixNeighbor",
                          "Internal - the number of common Edges among Tetrahedrons Must either be 1 or 3, Found"
                          +to_string(nEdgCommon),GBMERR_TOPOLOGY);
         }
@@ -136,6 +136,22 @@ void Triangulation::fixNeighbors() {
     }
     
     return;
+}
+
+int Triangulation::nonCommonVertex(int it1, int it2) {
+    // returns the first vertex in ttr[it2] that is not contained in ttr[it1]
+    int iv;
+    int *t1=ttr[it1].vrt, *t2=ttr[it2].vrt;
+    
+    for ( iv=0; iv<4; ++iv )
+        if ( t1[0]==t2[iv] or
+             t1[1]==t2[iv] or
+             t1[2]==t2[iv] or
+             t1[3]==t2[iv])
+            continue;
+        else
+            return t2[iv];
+    return -1;
 }
 
 int Triangulation::addTris(int it, TetraType *t){
@@ -420,7 +436,8 @@ int Triangulation::addTetra(int p[4],int halo) {
                      GBMERR_MAXTTRVRT); 
         pv->ttr[pv->nVrtTtr]=iTtr;
         pv->nVrtTtr++;
-        t.n[i]=-1; 
+        t.n[i]=-1;
+        t.nghVrt[i]=-1;
     }
     t.vol=tetraVolume(vrt[t.vrt[0]].p, vrt[t.vrt[1]].p,
                            vrt[t.vrt[2]].p, vrt[t.vrt[3]].p);
@@ -841,29 +858,59 @@ void Triangulation::TtrSplinesAlloc(int sType){
 
 void Triangulation::TtrSplinesLHS(int sType){
     int iTtr, id;
-    VertexType *v;
+    double dp[3];
     const int nd=TtrSplinesND(sType);
-
+    int pts_O2_LOCAL[10][2]= SPLINE_O2_LOCAL_POINTS;
+    int pts_O2_EDGES[10][2]= SPLINE_O2_LOCAL_POINTS;
+    int pts[10][2];
     // calculate spline
-    for (iTtr=0; iTtr<nTtr; ++iTtr) {
-        switch ( sType ) {
-            case SPLINE_O1:
-                for (id=0;id<nd; ++id) {
+    switch ( sType ) {
+        case SPLINE_O1: {
+            VertexType *v;
+            for (id=0;id<nd; ++id) {
+                for (iTtr=0; iTtr<nTtr; ++iTtr) {
                     v=&(vrt[ttr[iTtr].vrt[id]]);
                     QRSplines_a[sType][0][id][iTtr]=1.;
                     QRSplines_a[sType][1][id][iTtr]=v->p[0] - ttr[iTtr].c[0];
                     QRSplines_a[sType][2][id][iTtr]=v->p[1] - ttr[iTtr].c[1];
                     QRSplines_a[sType][3][id][iTtr]=v->p[2] - ttr[iTtr].c[2];
                 }
-                break;
-            default:
-                GBMError("Triangulation::TtrSplinesLHS",
-                         "SplineType " + to_string(sType) + " not implemented",
-                         GBMERR_UNDEVELOPED);
-        }
+            }
+            break; }
+        case SPLINE_O2_LOCAL: {
+            memcpy(pts,pts_O2_LOCAL,20*sizeof(int)); }
+        case SPLINE_O2_EDGES: {
+            if (sType==SPLINE_O2_EDGES) memcpy(pts,pts_O2_EDGES,20*sizeof(int));
+            VertexType *v[2];
+            for(id=0;id<nd; ++id) {
+                for (iTtr=0; iTtr<nTtr_inner; ++iTtr) {
+                    if ( pts[id][0] < 4 )
+                        v[0]=&vrt[ttr[iTtr].vrt[pts[id][0]]];
+                    else
+                        v[0]=&vrt[ttr[iTtr].nghVrt[pts[id][0]-4]];
+                    if ( pts[id][1] < 4 )
+                        v[1]=&vrt[ttr[iTtr].vrt[pts[id][1]]];
+                    else
+                        v[1]=&vrt[ttr[iTtr].nghVrt[pts[id][1]-4]];
+                    
+                    QRSplines_a[sType][0][id][iTtr]=1.;
+                    for ( int idim=0; idim<3; ++idim) {
+                        dp[idim]=(v[0]->p[idim]+v[1]->p[idim])/2. - ttr[iTtr].c[idim];
+                        QRSplines_a[sType][1+idim][id][iTtr]=dp[idim];
+                        QRSplines_a[sType][4+idim][id][iTtr]=dp[idim]*dp[idim];
+                    }
+                    QRSplines_a[sType][7][id][iTtr]=dp[0]*dp[1];
+                    QRSplines_a[sType][8][id][iTtr]=dp[0]*dp[2];
+                    QRSplines_a[sType][9][id][iTtr]=dp[1]*dp[2];
+                }
+            }
+            break; }
+        default:
+            GBMError("Triangulation::TtrSplinesLHS",
+                     "SplineType " + to_string(sType) + " not implemented",
+                     GBMERR_UNDEVELOPED);
     }
     m_in_qrdcmp(QRSplines_a[sType], nd, nd, nTtr, QRSplines_c[sType], QRSplines_d[sType]);
-    
     return;
 }
 
@@ -873,13 +920,41 @@ void Triangulation::TtrSplinesRHS(int sType, double *data){
     const int nd=TtrSplinesND(sType);
 
     switch ( sType ) {
-        case SPLINE_O1:
+        case SPLINE_O1: {
             for(id=0;id<4;++id)
                 for(iTtr=0;iTtr<nTtr;++iTtr)
                     QRSplines_b[sType][id][iTtr] = data[ttr[iTtr].vrt[id]];
-            break;
+            break; }
+        case SPLINE_O2_LOCAL: {
+            int v[2];
+            int pts[10][2] = SPLINE_O2_LOCAL_POINTS;
+            for(id=0;id<nd;++id)
+                for ( iTtr=0;iTtr<nTtr; ++iTtr) {
+                    v[0]=ttr[iTtr].vrt[pts[id][0]];
+                    v[1]=ttr[iTtr].vrt[pts[id][1]];
+                    QRSplines_b[sType][id][iTtr] = (data[v[0]]+data[v[1]])/2. ;
+                }
+            break; }
+        case SPLINE_O2_EDGES: {
+            int v[2];
+            int pts[10][2] = SPLINE_O2_EDGES_POINTS;
+            for(id=0;id<nd;++id)
+                for ( iTtr=0;iTtr<nTtr_inner;++iTtr) {
+                    if ( pts[id][0] < 4 )
+                        v[0]=ttr[iTtr].vrt[pts[id][0]];
+                    else
+                        v[0]=ttr[iTtr].nghVrt[pts[id][0]-4];
+                    if ( pts[id][1] < 4 )
+                        v[1]=ttr[iTtr].vrt[pts[id][1]];
+                    else
+                        v[1]=ttr[iTtr].nghVrt[pts[id][1]-4];
+                    if ( v[0] < 0 or v[1] <0 )
+                        GBMError("Triangulation::TtrSplinesRHS","Neighbor Vertex does not exist",GBMERR_HALO); 
+                    QRSplines_b[sType][id][iTtr] = (data[v[0]]+data[v[1]])/2. ;
+                }
+            break; }
         default:
-            GBMError("Triangulation::TtrSplinesLHS",
+            GBMError("Triangulation::TtrSplinesRHS",
             "SplineType " + to_string(sType) + " not implemented",
             GBMERR_UNDEVELOPED);
     }
@@ -890,7 +965,7 @@ void Triangulation::TtrSplinesRHS(int sType, double *data){
     return;
 }
 
-void Triangulation::CentroidSplines(int sType, double *v)
+void Triangulation::TtrCentroidSplines(int sType, double *v)
 {
     // Evaluate Splines at Centroids of tetrahedrons
     // all splines have the centroid value as first entry
@@ -898,6 +973,16 @@ void Triangulation::CentroidSplines(int sType, double *v)
         v[iTtr] = QRSplines_b[sType][0][iTtr];
     return; 
 }
+
+
+void Triangulation::TtrDerivativeSplines(int sType, double *v){
+    
+    for (int iTtr=0; iTtr<nTtr; ++iTtr)
+        v[iTtr] = QRSplines_b[sType][1][iTtr];
+    
+    return;
+}
+
 
 void Triangulation::ConstructHull(){
     TriType *pt;

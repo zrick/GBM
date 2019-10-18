@@ -85,6 +85,7 @@ void gbm_read_namelist(string &nl_file,GBM_Data &g){
 }
 
 void gbm_init(GBM_Data &g, Triangulation &tri){
+    cout << "Initializing triangulation: " << g.tri_file.c_str() << std::endl;
     tri = Triangulation((char *) &(g.tri_file.c_str()[0] ),g.periodic);
     string str;
     stringstream sstr;
