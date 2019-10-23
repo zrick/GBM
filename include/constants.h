@@ -53,7 +53,16 @@
 
 #define SPLINE_O2_LOCAL_POINTS  { {0,0},{1,1},{2,2},{3,3},{0,1},{0,2},{0,3},{1,2},{1,3},{2,3}};
 #define SPLINE_O2_EDGES_POINTS  { {4,4},{5,5},{6,6},{7,7},{0,1},{0,2},{0,3},{1,2},{1,3},{2,3}};
-// #define SPLINE_O2_EDGES_POINTS  { {0,0},{1,1},{2,2},{3,3},{4,4},{5,5},{6,6},{7,7},{0,0},{1,1}};
 
+#define GBMDER_NONE 0
+#define GBMDER_X    1
+#define GBMDER_Y    2
+#define GBMDER_Z    3
+#define GBMDER_XX   4
+#define GBMDER_YY   5
+#define GBMDER_ZZ   6
+#define GBMDER_XY   7
+#define GBMDER_XZ   8
+#define GBMDER_YZ   9
 
 #endif /* constants_h */

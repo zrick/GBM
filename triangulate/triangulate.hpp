@@ -55,7 +55,7 @@ public:
     void TtrSplinesLHS(int sType);
     void TtrSplinesRHS(int sType, double *data);
     void TtrCentroidSplines(int sType, double *v); 
-    void TtrDerivativeSplines(int sType, double *v);
+    void TtrDerivativeSplines(int sType, int direction, double *v);
 
     // Data Members
     int nDim, nVrt, nEdg, nTri, nTtr, nHul;

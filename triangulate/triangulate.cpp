@@ -340,6 +340,11 @@ int Triangulation::isEdge(int v0, int v1){
 int Triangulation::isVertex(double p[3], int start, int end){
     int iv,id;
 
+    // we should use some pre-hashing, for instance according to
+    // a global coarse cartesian grid here, to make the finding
+    // faster. 
+    
+    
     for ( iv=start; iv<(end==-1? nVrt : end); ++iv) {
         for (id=0; id<3; ++id)
             if ( vrt[iv].p[id] != p[id])
@@ -609,6 +614,11 @@ void Triangulation::writeGrid(string grid_file, string grid_format) {
             idata[it]=ttr[it].halo;
         vtkXMLWriteDataArray(gfile, att, nTtr, idata);
        
+        att[3]="nTtrN_neighbor";
+        for (it=0; it<nTtr; ++it)
+            idata[it]=ttr[it].n_neighbor;
+        vtkXMLWriteDataArray(gfile, att, nTtr, idata);
+            
         gfile << "</CellData>\n";
 
         // FOOTER of VTK XML FILE
@@ -897,11 +907,11 @@ void Triangulation::TtrSplinesLHS(int sType){
                     for ( int idim=0; idim<3; ++idim) {
                         dp[idim]=(v[0]->p[idim]+v[1]->p[idim])/2. - ttr[iTtr].c[idim];
                         QRSplines_a[sType][1+idim][id][iTtr]=dp[idim];
-                        QRSplines_a[sType][4+idim][id][iTtr]=dp[idim]*dp[idim];
+                        QRSplines_a[sType][4+idim][id][iTtr]=(dp[idim]*dp[idim])/2.;
                     }
-                    QRSplines_a[sType][7][id][iTtr]=dp[0]*dp[1];
-                    QRSplines_a[sType][8][id][iTtr]=dp[0]*dp[2];
-                    QRSplines_a[sType][9][id][iTtr]=dp[1]*dp[2];
+                    QRSplines_a[sType][7][id][iTtr]=dp[0]*dp[1]/2.;
+                    QRSplines_a[sType][8][id][iTtr]=dp[0]*dp[2]/2.;
+                    QRSplines_a[sType][9][id][iTtr]=dp[1]*dp[2]/2.;
                 }
             }
             break; }
@@ -969,17 +979,32 @@ void Triangulation::TtrCentroidSplines(int sType, double *v)
 {
     // Evaluate Splines at Centroids of tetrahedrons
     // all splines have the centroid value as first entry
-    for (int iTtr=0; iTtr<nTtr; ++iTtr)
+    double max=-9.e30;
+    double min= 9.e30;
+    for (int iTtr=0; iTtr<nTtr; ++iTtr) {
         v[iTtr] = QRSplines_b[sType][0][iTtr];
-    return; 
+        if ( v[iTtr] > max ) max=v[iTtr];
+        if ( v[iTtr] < min ) min=v[iTtr];
+    }
+    //cout << sType << "Centroids ("<<sType << "): [" << min << " , " << max << "]." << std::endl;
+    return;
+
+
 }
 
 
-void Triangulation::TtrDerivativeSplines(int sType, double *v){
+void Triangulation::TtrDerivativeSplines(int sType, int direction,double *v){
     
-    for (int iTtr=0; iTtr<nTtr; ++iTtr)
-        v[iTtr] = QRSplines_b[sType][1][iTtr];
+    double min, max;
+    max=-9.e30;
+    min= 9.e30;
     
+    for (int iTtr=0; iTtr<nTtr; ++iTtr) {
+        v[iTtr] = QRSplines_b[sType][direction][iTtr];
+        if ( v[iTtr] > max ) max=v[iTtr];
+        if ( v[iTtr] < min ) min=v[iTtr];
+    }
+    //cout << sType << "Derivative " << sType << "Dir" << direction << ": [" << min << " , " << max << "]." << std::endl;
     return;
 }
 

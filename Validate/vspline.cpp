@@ -8,13 +8,14 @@
 #include "vspline.hpp"
 int main(int argc, const char * argv[]) {
     
-    double *dat_v, *dat_t;
+    double *dat_v, *dat_t, *ddat_t;
     double k[3],l2,linf,l2_ref,l2_cube, linf_cube, l2_ref_cube,vref,vfil;
+    double minv,maxv,minv_ref,maxv_ref,dminv,dmaxv;
     string ofile, gridFormat;
     string testGrid,rundir;
-    int testList[] = {2,3,4,6,8,10,12,16,20,30};
-    int nTest = 10;//10;
-    int sType = SPLINE_O1;
+    int testList[] = {3,4,6,8,10,12,16,20,30};
+    int nTest = 9;//10;
+    int sType = SPLINE_O2_EDGES;
     int ii,jj,kk,nn;
     double x0[3], ***val3d;
     bool p[3]={false,false,false};
@@ -33,26 +34,31 @@ int main(int argc, const char * argv[]) {
         p[0]=true;
         p[1]=true;
         p[2]=true; 
-        tri.ConstructHalo();
+        if ( sType > SPLINE_O2_LOCAL )
+            tri.ConstructHalo();
         
         dat_v = (double *)malloc(tri.nVrt*sizeof(double));
         dat_t = (double *)malloc(tri.nTtr*sizeof(double));
-    
+        ddat_t= (double*)malloc(tri.nTtr*sizeof(double));
+        
         for (int i=0;i<tri.nVrt;++i)
             dat_v[i]=test_func(tri.vrt[i].p,&k[0]);
     
-        for (int i=0;i<tri.nTtr;++i)
+        for (int i=0;i<tri.nTtr;++i) {
             dat_t[i]=0.;
+            ddat_t[i]=0.;
+        }
     
         tri.TtrSplinesAlloc(sType);
         tri.TtrSplinesLHS(sType);
         tri.TtrSplinesRHS(sType,dat_v);
         tri.TtrCentroidSplines(sType,dat_t);
+        tri.TtrDerivativeSplines(sType,GBMDER_X, ddat_t);
     
         l2=0.;
         l2_ref=0.;
         linf=0.;
-        
+        minv=9.e30; maxv=-9.e30; dminv=9.e30; dmaxv=-9.e30;
         for (int iTtr=0; iTtr<tri.nTtr_inner; ++iTtr){
             double tmp,tmp2;
             tmp2= test_func(tri.ttr[iTtr].c,k);
@@ -60,6 +66,10 @@ int main(int argc, const char * argv[]) {
             l2 += tmp*tmp;
             l2_ref += tmp2*tmp2;
             linf = ( tmp>linf ) ? tmp : linf;
+            if ( dat_t[iTtr] < minv ) minv=dat_t[iTtr];
+            if ( dat_t[iTtr] > maxv ) maxv=dat_t[iTtr];
+            if (ddat_t[iTtr] <dminv )dminv=ddat_t[iTtr];
+            if (ddat_t[iTtr] >dmaxv )dmaxv=ddat_t[iTtr];
         }
         
         nn=testList[iTest];
@@ -80,6 +90,8 @@ int main(int argc, const char * argv[]) {
         l2_cube=0.;
         l2_ref_cube=0.;
         linf_cube=0.;
+        minv_ref=9.e30; maxv_ref=-9.e30;
+        
         for (ii=0; ii<nn; ++ii) {
             x0[0]=(ii+0.5)/double(nn);
             for (jj=0;jj<nn; ++jj) {
@@ -94,14 +106,16 @@ int main(int argc, const char * argv[]) {
                     l2_cube += (vfil-vref)*(vfil-vref);
                     linf_cube = fabs(vfil-vref) > linf_cube? fabs(vfil-vref) : linf_cube;
                     l2_ref_cube += vref*vref;
+                    if ( vfil < minv_ref ) minv_ref=vfil;
+                    if ( vfil > maxv_ref ) maxv_ref=vfil;
                 }
             }
         }
         
         GBMLog(to_string(testList[iTest])+","+to_string(l2/tri.nTtr)+","+to_string(l2/l2_ref)+","+to_string(linf)+
                "|"+to_string(l2_cube/(nn*nn*nn))+","+to_string(l2_cube/l2_ref_cube)+","+to_string(linf_cube));
-        cout << testList[iTest] << " " << l2/tri.nTtr << " " <<  l2/l2_ref << " " << linf << "|";
-        cout << testList[iTest] << " " << l2_cube/(nn*nn*nn) << " " <<  l2_cube/l2_ref_cube << " " << linf_cube << std::endl;
+        cout << "[" << testList[iTest] << "," <<  l2/l2_ref << "," << 1.-(maxv-minv)/2. << "," << 1.-(dmaxv-dminv)/4./PI <<  ",";
+        cout <<  l2_cube/l2_ref_cube << "," << 1.-(maxv_ref-minv_ref)/2. << "]," << std::endl;
         stringstream sstream;
         sstream << ofile << "_" << testList[iTest] << ".vtu.xml";
         writeSpline_test(sType, sstream.str(),&tri, dat_v, dat_t);
@@ -116,7 +130,8 @@ int main(int argc, const char * argv[]) {
 }
 
 double test_func(double *p,double *k){
-    return (cos(2*PI*k[0]*p[0])*cos(2*PI*k[1]*p[1])*cos(2*PI*k[2]*p[2]));
+    return cos(2*PI*k[0]*p[0])*cos(2*PI*k[1]*p[1])*cos(2*PI*k[2]*p[2]);
+    //return exp( -pow(k[0]*(p[0]-0.5),2) -pow(k[1]*(p[1]-0.5),2.) -pow(k[2]*(p[2]-0.5),2.) );
 }
 
 
@@ -129,8 +144,8 @@ void writeSpline_test(int sType, string ofile, Triangulation *tri, double *dat_v
     vector<string> att;
     ofstream gfile;
     
-    nTtr=tri->nTtr;
-    nVrt=tri->nVrt;
+    nTtr=tri->nTtr_inner;
+    nVrt=tri->nVrt_inner;
     
     data_size = 3*nVrt > 4*nTtr? 3*nVrt : 4*nTtr;
     
@@ -138,7 +153,6 @@ void writeSpline_test(int sType, string ofile, Triangulation *tri, double *dat_v
     idata=(int*)   malloc(data_size*sizeof(int));
     
     vtkXMLFileOpen(ofile,nVrt,nTtr,gfile);
-    cout << "Writing to " << ofile << " nTtr="<<nTtr << std::endl;
     // GRID INFORMATION -- VERTICES
     gfile << "<Points>\n";
     // <DataArray type="Float32" NumberOfComponents="3" format="ascii">
@@ -203,10 +217,42 @@ void writeSpline_test(int sType, string ofile, Triangulation *tri, double *dat_v
     vtkXMLWriteDataArray(gfile,att,nTtr,dat_t);
 
     att[3] = "DxTtr";
-    tri->TtrDerivativeSplines(sType,dat_t);
+    tri->TtrDerivativeSplines(sType,GBMDER_X,dat_t);
     vtkXMLWriteDataArray(gfile, att, nTtr, dat_t);
     
+    att[3] = "DyTtr";
+    tri->TtrDerivativeSplines(sType,GBMDER_Y,dat_t);
+    vtkXMLWriteDataArray(gfile, att, nTtr, dat_t);
     
+    att[3] = "DzTtr";
+    tri->TtrDerivativeSplines(sType,GBMDER_Z,dat_t);
+    vtkXMLWriteDataArray(gfile, att, nTtr, dat_t);
+
+    if ( sType > SPLINE_O1 ) {
+        att[3] = "DxxTtr";
+        tri->TtrDerivativeSplines(sType,GBMDER_XX,dat_t);
+        vtkXMLWriteDataArray(gfile, att, nTtr, dat_t);
+
+        att[3] = "DyyTtr";
+        tri->TtrDerivativeSplines(sType,GBMDER_YY,dat_t);
+        vtkXMLWriteDataArray(gfile, att, nTtr, dat_t);
+
+        att[3] = "DzzTtr";
+        tri->TtrDerivativeSplines(sType,GBMDER_ZZ,dat_t);
+        vtkXMLWriteDataArray(gfile, att, nTtr, dat_t);
+
+        att[3] = "DxyTtr";
+        tri->TtrDerivativeSplines(sType,GBMDER_XY,dat_t);
+        vtkXMLWriteDataArray(gfile, att, nTtr, dat_t);
+
+        att[3] = "DxzTtr";
+        tri->TtrDerivativeSplines(sType,GBMDER_XZ,dat_t);
+        vtkXMLWriteDataArray(gfile, att, nTtr, dat_t);
+
+        att[3] = "DyzTtr";
+        tri->TtrDerivativeSplines(sType,GBMDER_YZ,dat_t);
+        vtkXMLWriteDataArray(gfile, att, nTtr, dat_t);
+    }
     
     gfile << "</CellData>\n";
     
