@@ -67,6 +67,8 @@ void gbm_read_namelist(string &nl_file,GBM_Data &g){
     g.grid_file = nl->getVal_str("Files","grid");
     g.grid_format=nl->getVal_str("Files","grid_format");
     
+    // Optional values -- defaults set. 
+    
     g.use_atlas=false;
     if ( nl->hasVal("Files","atlas") )
     {
@@ -74,11 +76,15 @@ void gbm_read_namelist(string &nl_file,GBM_Data &g){
         g.atlas_file= nl->getVal_str("Files","atlas");
     }
     
+    
     for(int i=0; i<3; ++i)   // Default is non-periodic
         g.periodic[i]=false;
-    g.periodic[0]=nl->getVal_bool("Grid","periodic_x");
-    g.periodic[1]=nl->getVal_bool("Grid","periodic_y");
-    g.periodic[2]=nl->getVal_bool("Grid","periodic_z");
+    if ( nl->hasVal("Grid","periodic_x" ) )
+        g.periodic[0]=nl->getVal_bool("Grid","periodic_x");
+    if ( nl->hasVal("Grid","periodic_y" ) )
+        g.periodic[1]=nl->getVal_bool("Grid","periodic_y");
+    if ( nl->hasVal("Grid","periodic_z" ) )
+        g.periodic[2]=nl->getVal_bool("Grid","periodic_z");
     
     nl->getList_dbl("Grid", "domain", g.domain, 6);
     
