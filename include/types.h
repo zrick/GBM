@@ -124,6 +124,10 @@ typedef struct TetraType{
                 // maps to the periodic Tetrahedron inside the domain
 } TetraType;
 
-
+typedef struct HashBox {
+    vector<int> vrt;
+    vector<int> ttr;
+    double b[6]; 
+} HashBox;
 
 #endif /* types_h */

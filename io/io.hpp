@@ -10,9 +10,13 @@
 #define io_
 
 #include <iostream>
+#include <cstdio>
+#include <stdlib.h>
+#include <sys/stat.h>
 #include <fstream>
 #include <vector>
 #include <cstring>
+
 #include "constants.h"
 #include "utils.hpp"
 #include "types.h"

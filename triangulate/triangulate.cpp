@@ -17,11 +17,13 @@ Triangulation::Triangulation(){
     return; 
 }
 
-Triangulation::Triangulation(char *fname,bool p[3]){
+Triangulation::Triangulation(char *fname,bool p[3], double *dom){
     nEdg=0;
     nTri=0;
     nTtr=0;
     nVrt=0;
+    haloDefined=false;
+    domain=dom; 
     for (int id=0; id<3; ++id)
         periodic[id]=p[id];
     read_mesh(fname);
@@ -61,6 +63,8 @@ void Triangulation::read_mesh(char *fname){
         box[2*i+1]=-9e9;
     }
     
+    hashBoxesInit(nVrt_target);
+    
     vrt.reserve(nVrt_target);
     for ( int iVrt=0; iVrt<nVrt_target; ++iVrt) {
         getline(tfile,line);
@@ -96,8 +100,87 @@ void Triangulation::read_mesh(char *fname){
 
     nTtr_inner=nTtr;
     nVrt_inner=nVrt;
+        
+    // hashBoxesSort();
     
     return;
+}
+
+void Triangulation::hashBoxesInit(int ntarget){
+    int i0,i1,i2,id,nbox;
+    double *b;
+    HashBox *hb;
+    
+    b= domain;
+
+    nbox = ntarget / (GBM_NBOX*GBM_NBOX*GBM_NBOX);
+    
+    for ( id=0;id<3; ++id)
+        hash_dx[id]=(b[2*id+1]-b[2*id])/GBM_NBOX;
+    
+    for (i0=-1; i0<GBM_NBOX+1; ++i0)
+        for (i1=-1;i1<GBM_NBOX+1; ++i1)
+            for (i2=-1;i2<GBM_NBOX+1; ++i2)
+                for (id=0; id<3; ++id) {
+                    hb=&hbox[i0+1][i1+1][i2+1];
+                    hb->b[2*id] =i0*hash_dx[id];
+                    hb->b[2*id+1] =(i0+1)*hash_dx[id];
+                    hb->vrt.reserve(nbox);
+                    hb->ttr.reserve(nbox*6);
+                }
+   
+    return;
+}
+
+void Triangulation::hashBoxesSort() {
+    HashBox *b;
+    int i0,i1,i2;
+    for (i0=-1; i0<GBM_NBOX+1; ++i0)
+        for (i1=-1;i1<GBM_NBOX+1; ++i1)
+            for (i2=-1;i2<GBM_NBOX+1; ++i2) {
+                b= &hbox[i0+1][i1+1][i2+1];
+                sort(b->ttr.begin(),b->ttr.end());
+                sort(b->vrt.begin(),b->vrt.end());
+            }
+    return;
+}
+
+
+void Triangulation::hashBoxAddVrt(int iv){
+    double *p=vrt[iv].p;
+    HashBox *hb;
+    int id,i[3];
+    
+    for (id=0;id<3;++id) {
+        i[id] = floor(p[id]/hash_dx[id]);
+        i[id] = i[id]<-1?       -1      :i[id];
+        i[id] = i[id]>GBM_NBOX? GBM_NBOX:i[id];
+    }
+    hb = &hbox[i[0]+1][i[1]+1][i[2]+1];
+    hb->vrt.push_back(iv);
+}
+
+void Triangulation::hashBoxAddTtr(int it){
+    int i[3],i_old[3],iv,id;
+    double *p;
+    
+    
+    for (iv=0; iv<4; ++iv) {
+        p=vrt[ttr[it].vrt[iv]].p;
+        for ( id=0; id<3; ++id) {
+            i_old[id]=i[id];
+            i[id] = floor(p[id]/hash_dx[id]);
+            i[id] = i[id]<-1? -1 : i[id];
+            i[id] = i[id]>GBM_NBOX ? GBM_NBOX : i[id];
+        }
+        if ( iv==0 or
+            (iv > 0 and ( i_old[0] != i[0] or i_old[1] != i[1] or i_old[2] != i[2] ) ) ) {
+            /*vector<int> *t = &hbox[i[0]+1][i[1]+1][i[2]+1].ttr;
+            if ( find(t->begin(), t->end(), it) == t->end() )*/
+            hbox[i[0]+1][i[1]+1][i[2]+1].ttr.push_back(it);
+        }
+    }
+    return; 
 }
 
 void Triangulation::fixNeighbors() {
@@ -338,21 +421,35 @@ int Triangulation::isEdge(int v0, int v1){
 }
 
 int Triangulation::isVertex(double p[3], int start, int end){
-    int iv,id;
-
-    // we should use some pre-hashing, for instance according to
-    // a global coarse cartesian grid here, to make the finding
-    // faster. 
+    int iv,id, i[3];
+    HashBox *hb;
+    double *pv;
+    for ( id=0;id<3;++id) {
+        i[id] = floor(p[id] / hash_dx[id]);
+        i[id] = i[id]<-1?       -1      :i[id];
+        i[id] = i[id]>GBM_NBOX? GBM_NBOX:i[id];
+    }
+    hb = &hbox[i[0]+1][i[1]+1][i[2]+1];
     
+    for(iv=0; iv < hb->vrt.size(); ++iv ) {
+        if ( hb->vrt[iv] < start )
+            continue;
+        else if ( end > -1 and hb->vrt[iv] > end )
+            break;
+        
+        pv = vrt[hb->vrt[iv]].p;
+        if ( pv[0] == p[0] and pv[1] == p[1] and pv[2] == p[2] )
+            return hb->vrt[iv];
+    }
     
-    for ( iv=start; iv<(end==-1? nVrt : end); ++iv) {
+    /*for ( iv=start; iv<(end==-1? nVrt : end); ++iv) {
         for (id=0; id<3; ++id)
             if ( vrt[iv].p[id] != p[id])
                 break;
         if ( id== 3 )
             return iv;
-    }
- 
+     }
+     */
     return -1;
 }
 
@@ -393,14 +490,44 @@ int Triangulation::addVertex(double p[4],int halo) {
         b[2*id]   = vrt[i].p[id] < b[2*id]?   vrt[i].p[id]: b[2*id];    // min x
         b[2*id+1] = vrt[i].p[id] > b[2*id+1]? vrt[i].p[id]: b[2*id+1];  // max x
     }
+    hashBoxAddVrt(i);
+    
     return int(vrt.size());
 }
 
 int Triangulation::isTetra(int p[4], int start, int end) {
-    for(int it=start; it<(end==-1? nTtr : end); ++it)
-        if (ttr[it].vrt[0]==p[0] and ttr[it].vrt[1]==p[1] and
-            ttr[it].vrt[2]==p[2] and ttr[it].vrt[3]==p[3] )
-            return it;
+    int id, i[3];
+    HashBox *hb;
+       
+    // version with hashing
+    for (id=0;id<3; ++id) {
+        i[id] = floor(vrt[p[0]].p[id] / hash_dx[id]);
+        i[id] = i[id]<-1?       -1      :i[id];
+        i[id] = i[id]>GBM_NBOX? GBM_NBOX:i[id];
+    }
+    hb = & hbox[i[0]+1][i[1]+1][i[2]+1];
+    int *tv;
+
+    for(int it=0; it < hb->ttr.size(); ++it ) {
+        if ( hb->ttr[it] < start )
+            continue;
+        else if ( end > -1 and hb->ttr[it] > end )
+            break;
+        
+        tv = ttr[ hb->ttr[it] ].vrt;
+        if ( tv[0] == p[0] and tv[1] == p[1] and tv[2] == p[2] and tv[3] == p[3] )
+            return hb->ttr[it];
+    }
+
+    // version without hashing
+    //cout<<"TETRA NOT FOUND; GENERATING "<<p[0]<<","<<p[1]<<","<<p[2]<<","<<p[3]<<std::endl;
+    /*for(int it=start; it<(end==-1? nTtr : end); ++it)
+           if (ttr[it].vrt[0]==p[0] and ttr[it].vrt[1]==p[1] and
+               ttr[it].vrt[2]==p[2] and ttr[it].vrt[3]==p[3] ) {
+               //cout << "FOUND!"<<std::endl;
+               return it;
+           }
+    */
     return -1;
 }
 
@@ -451,7 +578,7 @@ int Triangulation::addTetra(int p[4],int halo) {
     addTris(iTtr,&t);   // update list of triangles
     
     ttr.push_back(t);
-
+    hashBoxAddTtr(iTtr);
     return int(ttr.size());
 }
 
@@ -716,7 +843,7 @@ void Triangulation::construct_normal(TetraType *t, TriType tri_loc,int ittr_loc)
             tri_loc.n[ittr_loc][d]=-tri_loc.n[ittr_loc][d];
 }
 
-
+bool Triangulation::hasHalo() { return haloDefined; }
 bool Triangulation::hasAtlas(){ return atlas.size() > 0? true : false; }
 
 void Triangulation::setAtlas(string fname){
@@ -921,6 +1048,7 @@ void Triangulation::TtrSplinesLHS(int sType){
                      GBMERR_UNDEVELOPED);
     }
     m_in_qrdcmp(QRSplines_a[sType], nd, nd, nTtr, QRSplines_c[sType], QRSplines_d[sType]);
+    //
     return;
 }
 
@@ -1015,10 +1143,12 @@ void Triangulation::ConstructHull(){
        if ( tri[iTri].bdy == true )
        {
            pt=&tri[iTri];
-           hul.push_back( pt );
+           hulTri.push_back( pt );
            for (int d=0; d<3; ++d) {
                edg[pt->edg[d]].bdy=true;
                vrt[pt->vrt[d]].bdy=true;
+               if ( find(hulVrt.begin(),hulVrt.end(),pt->vrt[d]) == hulVrt.end() )
+                   hulVrt.push_back(pt->vrt[d]);
            }
            ttr[pt->ttr[0]].bdy=true;
            if ( pt->ttr[1] > 0 )
@@ -1032,7 +1162,7 @@ void Triangulation::ConstructHull(){
 }
 
 void Triangulation::ConstructHalo(){
-    double x[4],x2[3],s[3],tmp1[4];
+    double x[3],x2[3],s[3],tmp1[4];
     vector<VertexType> hVrt;
     vector<EdgeType>   hEdg;
     vector<TetraType>  hTtr;
@@ -1045,6 +1175,7 @@ void Triangulation::ConstructHalo(){
     int nBdy=0;
     int dimCount=0;
     bool per[3],per_loc[3];
+    uint64_t ttime1=0,ttime2=0,ctime=0;
     
     GBMLog("Constructing Halo Region");
     
@@ -1054,94 +1185,101 @@ void Triangulation::ConstructHalo(){
     tmp1[3]=-1.;
     for (id=0;id<3;++id)
         s[id] = fabs(box[2*id+1]-box[2*id]);
-    
-    for ( iv=0; iv<nVrt_inner; ++iv) {
-        if ( vrt[iv].bdy ) {
+    ttime1=0; ttime2=0;
+    ctime=current_time();
+
+    for ( int ih=0; ih<hulVrt.size(); ++ih ) {
+        iv = hulVrt[ih];
+        for (id=0;id<3;++id)
+            x[id]=vrt[iv].p[id];
+        
+        /*for ( iv2=0; iv2<nVrt_inner; ++iv2 ) {
+         if( vrt[iv2].bdy ) {*/
+        for ( int ih2=0; ih2<hulVrt.size(); ++ih2) {
+            iv2 = hulVrt[ih2];
+            for(id=0; id<3; ++id)
+                x2[id]=vrt[iv2].p[id];
             
-            for (id=0;id<3;++id)
-                   x[id]=vrt[iv].p[id];
-
-            for ( iv2=0; iv2<nVrt_inner; ++iv2 ) {
-                for (id=0; id<3; ++id)
-                    x2[id] = vrt[iv2].p[id];
-
-                for ( id=0; id<3; ++id){
-                    if (( x2[id] == x[id]+s[id] or x2[id] == x[id]-s[id] )  and
-                        ( x2[0]-x[0]==0 or fabs(x2[0]-x[0])==s[0]) and
-                        ( x2[1]-x[1]==0 or fabs(x2[1]-x[1])==s[1]) and
-                        ( x2[2]-x[2]==0 or fabs(x2[2]-x[2])==s[2]) ) {
-                        // Any point on boundary (includes edges and corners)
-                        for ( ie=0; ie<vrt[iv2].nVrtEdg; ++ie) { // loop over edges corresponding to p
-                            if ( (v_add=edg[vrt[iv2].edg[ie]].vrt[0]) == iv2 )
-                                v_add=edg[vrt[iv2].edg[ie]].vrt[1];
-                            for ( id2=0;id2<3;++id2) tmp1[id2]=vrt[v_add].p[id2];
-                            tmp1[id] += tmp1[id]>=x[id]? -s[id] : s[id];
-                            if ( tmp1[id] < box[2*id] or tmp1[id] > box[2*id+1] )
-                                if ( isVertex(tmp1,nVrt_inner)<0) nVrt=addVertex(tmp1,v_add);
-                        }
-                        
-                        for ( it=0; it<vrt[iv2].nVrtTtr; ++it ){
-                            ttrPeriodic(it,iv2,id,ttr_new);
-                            newTtr.push_back(vector<int>(ttr_new,ttr_new+5));
-                        }
-                        
-                        // Now treat the edge points (2 periodic dimensions)
-                        dimCount=0;
-                        for ( id2=0; id2<3; ++id2)
-                            if ( fabs(x2[id2]-x[id2])==s[id2] and dimCount < 2 ) {
-                                per[id2]=true;
-                                dimCount++;
-                            } else per[id2]=false;
-                        
-                        if ( dimCount == 2 ) {
-                            for ( ie=0; ie<vrt[iv2].nVrtEdg; ++ie) {
-                                for (id2=0;id2<3;++id2) per_loc[id2]=false;
-                                if ( ( v_add=edg[vrt[iv2].edg[ie]].vrt[0]) == iv2 )
-                                    v_add=edg[vrt[iv2].edg[ie]].vrt[1];
-                                dimCount=0;
-                                for ( id2=0;id2<3;++id2) {
-                                    tmp1[id2]=vrt[v_add].p[id2];
-                                    if ( per[id2] and dimCount <2 ) {
-                                        tmp1[id2] += tmp1[id2]>=x[id2]? -s[id2] : s[id2];
-                                        per_loc[id2]=true;
-                                        ++dimCount;
-                                    }
-                                }
-                                if ( isVertex(tmp1,0) < 0 ) nVrt=addVertex(tmp1,v_add);
-                            }
-                            for ( it=0; it<vrt[iv2].nVrtTtr; ++it ){
-                                ttrPeriodic(it,iv2,per,ttr_new);
-                                newTtr.push_back(vector<int>(ttr_new,ttr_new+5));
-                            }
-                        }
-                    }
-                } // for ( id=0; id<3; ++id)
-                
-                // Now treat the corner points (3 periodic dimensions)
-                for ( id2=0; id2<3; ++id2)
-                    if ( fabs(x2[id2]-x[id2])==s[id2] ) per[id2]=true;
-                    else                                per[id2]=false;
-                        
-                if ( per[0] and per[1] and per[2] ) {
-                    for ( ie=0; ie<vrt[iv2].nVrtEdg; ++ie) {
-                        if ( ( v_add=edg[vrt[iv2].edg[ie]].vrt[0]) == iv2 )
+            for ( id=0; id<3; ++id){
+                if (( x2[id] == x[id]+s[id] or x2[id] == x[id]-s[id] )  and
+                    ( x2[0]-x[0]==0 or fabs(x2[0]-x[0])==s[0]) and
+                    ( x2[1]-x[1]==0 or fabs(x2[1]-x[1])==s[1]) and
+                    ( x2[2]-x[2]==0 or fabs(x2[2]-x[2])==s[2]) ) {
+                    // Any point on boundary (includes edges and corners)
+                    for ( ie=0; ie<vrt[iv2].nVrtEdg; ++ie) { // loop over edges corresponding to p
+                        if ( (v_add=edg[vrt[iv2].edg[ie]].vrt[0]) == iv2 )
                             v_add=edg[vrt[iv2].edg[ie]].vrt[1];
-                        for ( id2=0;id2<3;++id2) {
-                            tmp1[id2]=vrt[v_add].p[id2];
-                            tmp1[id2] += tmp1[id2]>=x[id2]? -s[id2] : s[id2];
-                        }
-                        if ( isVertex(tmp1,0) < 0 ) nVrt=addVertex(tmp1,v_add);
+                        for ( id2=0;id2<3;++id2) tmp1[id2]=vrt[v_add].p[id2];
+                        tmp1[id] += tmp1[id]>=x[id]? -s[id] : s[id];
+                        if ( tmp1[id] < box[2*id] or tmp1[id] > box[2*id+1] )
+                            if ( isVertex(tmp1,nVrt_inner)<0) nVrt=addVertex(tmp1,v_add);
                     }
+                    
                     for ( it=0; it<vrt[iv2].nVrtTtr; ++it ){
-                        ttrPeriodic(it,iv2,per,ttr_new);
+                        ttrPeriodic(it,iv2,id,ttr_new);
                         newTtr.push_back(vector<int>(ttr_new,ttr_new+5));
                     }
+                    
+                    // Now treat the edge points (2 periodic dimensions)
+                    dimCount=0;
+                    for ( id2=0; id2<3; ++id2)
+                        if ( fabs(x2[id2]-x[id2])==s[id2] and dimCount < 2 ) {
+                            per[id2]=true;
+                            dimCount++;
+                        } else per[id2]=false;
+                    
+                    if ( dimCount == 2 ) {
+                        for ( ie=0; ie<vrt[iv2].nVrtEdg; ++ie) {
+                            for (id2=0;id2<3;++id2) per_loc[id2]=false;
+                            if ( ( v_add=edg[vrt[iv2].edg[ie]].vrt[0]) == iv2 )
+                                v_add=edg[vrt[iv2].edg[ie]].vrt[1];
+                            dimCount=0;
+                            for ( id2=0;id2<3;++id2) {
+                                tmp1[id2]=vrt[v_add].p[id2];
+                                if ( per[id2] and dimCount <2 ) {
+                                    tmp1[id2] += tmp1[id2]>=x[id2]? -s[id2] : s[id2];
+                                    per_loc[id2]=true;
+                                    ++dimCount;
+                                }
+                            }
+                            if ( isVertex(tmp1,0) < 0 )
+                                nVrt=addVertex(tmp1,v_add);
+                        }
+                        for ( it=0; it<vrt[iv2].nVrtTtr; ++it ){
+                            ttrPeriodic(it,iv2,per,ttr_new);
+                            newTtr.push_back(vector<int>(ttr_new,ttr_new+5));
+                        }
+                    }
                 }
-            } // for (iv2=0; iv2<nVrt_inner; ++iv2)
-            ++nBdy;
-        } // if (vrt[iv].bdy)
-    } // for (iv=0; iv<nVrt_inner; ++iv)
- 
+            } // for ( id=0; id<3; ++id)
+            
+            // Now treat the corner points (3 periodic dimensions)
+            for ( id2=0; id2<3; ++id2)
+                if ( fabs(x2[id2]-x[id2])==s[id2] ) per[id2]=true;
+                else                                per[id2]=false;
+            
+            if ( per[0] and per[1] and per[2] ) {
+                for ( ie=0; ie<vrt[iv2].nVrtEdg; ++ie) {
+                    if ( ( v_add=edg[vrt[iv2].edg[ie]].vrt[0]) == iv2 )
+                        v_add=edg[vrt[iv2].edg[ie]].vrt[1];
+                    for ( id2=0;id2<3;++id2) {
+                        tmp1[id2]=vrt[v_add].p[id2];
+                        tmp1[id2] += tmp1[id2]>=x[id2]? -s[id2] : s[id2];
+                    }
+                    if ( isVertex(tmp1,0) < 0 ) nVrt=addVertex(tmp1,v_add);
+                }
+                for ( it=0; it<vrt[iv2].nVrtTtr; ++it ){
+                    ttrPeriodic(it,iv2,per,ttr_new);
+                    newTtr.push_back(vector<int>(ttr_new,ttr_new+5));
+                }
+            }
+        } // for (ih2=0; ih2<hulVrt.size(); ++ih2
+        ++nBdy;
+    } // for (ih=0; ih<hulVrt.size(); ++ih) 
+    ttime1 = current_time()-ctime;
+
+    GBMLog("... Timing for edge iteration " +to_string(ttime1/1.e3) + " ms");
+    
     // Finally, add the Tetrahedrons for the halo
     {   // performance-critical part, therefore instrumented.
         uint64_t ttime1=0,ttime2=0,ctime=0;

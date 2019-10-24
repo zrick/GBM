@@ -25,6 +25,8 @@
 
 #define MAX_TTR_ADJ 64
 
+#define GBM_NBOX 5
+
 // OUTPUT FORMATS
 #define FMT_ASC_BASIC 0
 #define FMT_ASC_EXT   1
@@ -43,6 +45,8 @@
 #define PERIODIC_XZ  5
 #define PERIODIC_YZ  6
 #define PERIODIC_XYZ 7
+
+
 
 #define SPLINE_NONE     -1
 #define SPLINE_O1       0

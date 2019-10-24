@@ -34,7 +34,7 @@ class Triangulation{
 public:
     // Constructors
     Triangulation();
-    Triangulation(char *fname,bool p[3]);
+    Triangulation(char *fname,bool p[3], double *dom);
  
     // Function Members
     void writeGrid(string grid_file, string grid_format);
@@ -46,11 +46,12 @@ public:
     void printTetrahedron(TetraType *t, int level);
     
     bool hasAtlas();
+    bool hasHalo();
     void setAtlas(string fname);
     
     void ConstructHull();
     void ConstructHalo();
-
+    
     void TtrSplinesAlloc(int sType);
     void TtrSplinesLHS(int sType);
     void TtrSplinesRHS(int sType, double *data);
@@ -68,13 +69,18 @@ public:
     vector<TriType>    tri; // 2D Triangles (surfaces of Tetrahedrons)
     vector<EdgeType>   edg; // 1D Edges of Tetrahedrons and Triangles
     //  
-    vector<TriType *>  hul; // Exterior Surface of Triangulation
+    vector<TriType *>    hulTri; // Exterior Surface Triangles of Triangulation
+    vector<int>          hulVrt; // Exterior Surface Vertices of Triangulation 
     vector<string>   atlas; // Names of atlas regions; first element is atlas file
-
+    
+    HashBox hbox[GBM_NBOX+2][GBM_NBOX+2][GBM_NBOX+2];
+    double hash_dx[3];
+    
     int nonCommonVertex(int it1, int it2);
 
 private:
     void read_mesh(char *fname);
+
     void construct_normal(TetraType *t, TriType tri_loc, int ittr_loc);
 
     int addVertex(istringstream &l,int halo=-1);
@@ -94,6 +100,12 @@ private:
     void ttrPeriodic(int it, int iv, int idim, int *ttr_new);
     void ttrPeriodic(int it, int iv2, bool per[3], int *ttr_new);
 
+    void hashBoxesInit(int nVrt_target=1);
+    void hashBoxesSort();
+    void hashBoxAddVrt(int iv);
+    void hashBoxAddTtr(int it);
+
+
     double ***QRSplines_a[MAX_SPLINES];
     double **QRSplines_b[MAX_SPLINES];
     double **QRSplines_c[MAX_SPLINES];
@@ -101,9 +113,10 @@ private:
     double *QRSplines_bare[MAX_SPLINES];
     
     int TtrSplinesND(int sType);
-
     
-    bool periodic[3]; 
+    bool haloDefined; 
+    bool periodic[3];
+    double *domain; 
 };
 
 #endif // ifndef triangulate_h

@@ -79,15 +79,26 @@ template<typename T>
 void vtkXMLWriteDataArray(ofstream &gfile, vector<string> att, int nval, T *val){
     int i;
     const int natt = int(att.size()/2);
+    char *buf;
+    stringstream st;
+    int nchar=0;
+    string format;
     
-    gfile << "<DataArray ";
+    buf=(char *)malloc((nval*10+100)*sizeof(char)); 
+    
+    if (typeid(T) == typeid(int) )
+        format = string("%d ");
+    else if ( typeid(T) == typeid(double) )
+        format = string("%.6f ");
+    
+    nchar += sprintf(&buf[nchar],"<DataArray ");
     for (i=0;i<natt;++i)
-        gfile << att[2*i] << "=\"" << att[2*i+1] << "\" ";
-    gfile << ">\n";
-    for (i=0;i<nval;++i)
-        gfile << std::fixed << val[i] << " "; 
-    gfile << "\n</DataArray>\n";
-    
+        nchar += sprintf(&buf[nchar],"%s=\"%s\" ", att[2*i].c_str(), att[2*i+1].c_str());
+    nchar += sprintf(&buf[nchar],">\n");
+    for (i=0;i<nval;i++)
+        nchar += sprintf(&buf[nchar],format.c_str(),val[i]);
+    nchar += sprintf(&buf[nchar],"\n</DataArray>\n");
+    gfile.write(buf,nchar);
    
     return;
 }
