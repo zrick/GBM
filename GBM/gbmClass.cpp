@@ -14,7 +14,7 @@ void GBM::read_namelist(string &nl_file){
     nml=Namelist(nl_file);
     nl=&(nml);
     
-    // tory arguments -- no default if missing from namelist.
+    // mandatory arguments -- no default if missing from namelist.
     
     tri_file  = nl->getVal_str("Files","triangulation");
     grid_file = nl->getVal_str("Files","grid");
@@ -32,6 +32,15 @@ void GBM::read_namelist(string &nl_file){
     if ( nl->hasVal("Files","pathes") ) {
         use_pathes=true;
         pathes_file=nl->getVal_str("Files","pathes");
+    }
+    
+    tau_from_file=false;
+    if ( nl->hasVal("Files","tauFile") ) {
+        tau_from_file=true;
+        tau_file=nl->getVal_str("Files","tauFile");
+        tauLine=1;
+        if ( nl->hasVal("Files","tauLine") )
+            tauLine=nl->getVal_int("Files","tauLine");
     }
     
     for(int i=0; i<3; ++i)   // Default is non-periodic
@@ -68,6 +77,12 @@ void GBM::init(){
 
     if ( use_pathes )
         tri.ConstructPathes(pathes_file);
+    
+    if ( tau_from_file ) {
+        string dum;
+        tauVrt = (double *) malloc ( tri.nVrt *sizeof(double) );
+        readCSVLine(tau_file, tauLine, tauVrt, dum);
+    }
     
     return;
 }

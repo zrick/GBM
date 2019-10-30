@@ -34,10 +34,12 @@ public:
     string grid_format;
     string atlas_file;
     string pathes_file;
+    string tau_file; 
     string tri_file;
 
     bool use_atlas;
     bool use_pathes;
+    bool tau_from_file;
     bool periodic[3];
 
     double domain[6];
@@ -47,9 +49,10 @@ public:
     void read_namelist(string &nl_file);
     void init();
     
+    
 private:
     friend Triangulation;
-    
+    int tauLine; 
 };
 
 #define main_h
