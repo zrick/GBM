@@ -13,8 +13,14 @@ int main(int argc, const char * argv[]) {
     int i;
     double dum;
     string nl_name;
-    GBM_Data gbm;
+    GBM gbm;
         
+    vector<string> header;
+    vector<string> labels; 
+       
+
+    //exit(EXIT_SUCCESS);
+    
     GBMLog("====================================================\nSTARTING " + string(argv[0]) +" on " + gbmTime());
     
     if ( argc >1 ) {
@@ -24,9 +30,8 @@ int main(int argc, const char * argv[]) {
         nl_name=string("/Users/zrick/Work/research_projects/GBM/gbm.nml");
     }
     
-    gbm_read_namelist(nl_name,gbm);
-    gbm_init(gbm,gbm.tri);
-        
+    gbm.read_namelist(nl_name);
+    gbm.init();
     gbm.tri.writeGrid(gbm.grid_file,gbm.grid_format);
   
     dum=0;
@@ -46,65 +51,11 @@ int main(int argc, const char * argv[]) {
     }
     GBMLog("Surface Area: "+to_string(dum));
     
-    gbm.tri.ConstructHalo();
-    
     gbm.tri.writeGrid("/Users/zrick/WORK/research_projects/GBM/test.vtu.xml","XML_VTK");
+    gbm.tri.writePths("/Users/zrick/WORK/research_projects/GBM/pth.vtu.xml","XML_VTK");
     
     GBMLog("FINISHED GBM on " + gbmTime() + "====================================================");
       
     return 0;
 }
 
-void gbm_read_namelist(string &nl_file,GBM_Data &g){
-    Namelist *nl;
-    
-    g.nml=Namelist(nl_file);
-    nl=&(g.nml);
-    
-    // Mandatory arguments -- no default if missing from namelist.
-    
-    g.tri_file  = nl->getVal_str("Files","triangulation");
-    g.grid_file = nl->getVal_str("Files","grid");
-    g.grid_format=nl->getVal_str("Files","grid_format");
-    
-    // Optional values -- defaults set. 
-    
-    g.use_atlas=false;
-    if ( nl->hasVal("Files","atlas") )
-    {
-        g.use_atlas=true;
-        g.atlas_file= nl->getVal_str("Files","atlas");
-    }
-    
-    
-    for(int i=0; i<3; ++i)   // Default is non-periodic
-        g.periodic[i]=false;
-    if ( nl->hasVal("Grid","periodic_x" ) )
-        g.periodic[0]=nl->getVal_bool("Grid","periodic_x");
-    if ( nl->hasVal("Grid","periodic_y" ) )
-        g.periodic[1]=nl->getVal_bool("Grid","periodic_y");
-    if ( nl->hasVal("Grid","periodic_z" ) )
-        g.periodic[2]=nl->getVal_bool("Grid","periodic_z");
-    
-    nl->getList_dbl("Grid", "domain", g.domain, 6);
-    
-    return;
-}
-
-void gbm_init(GBM_Data &g, Triangulation &tri){
-    tri = Triangulation((char *) &(g.tri_file.c_str()[0] ),g.periodic,g.domain);
-    string str;
-    stringstream sstr;
-    if (g.use_atlas)
-         tri.setAtlas(g.atlas_file);                         // add atlas to triangulation
-
-    GBMLog("Total volume of Tetrahedrons: " +to_string(tri.volume));
-    sstr << "Bounding Box:" << setprecision(4) << scientific;
-    for ( int i=0; i<3; ++i)
-        sstr <<  "[" << tri.box[2*i] << "," << tri.box[2*i+1] << "]" << ( i<2?" x ": "" );
-
-    GBMLog(sstr.str());
-    
-    
-return;
-}
