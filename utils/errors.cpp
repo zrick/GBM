@@ -7,6 +7,3 @@
 //
 
 #include "errors.hpp"
-
-using namespace std;
-

@@ -13,11 +13,14 @@
 #define GBM_FILE_LOG "gbm.log"
 #define GBM_FILE_OUT "gbm.out"
 
+#define GBMMissval -1
+#define GBM_DEFAULT_SEPARATOR ';' 
+
 // Hard-coded array sizes for memory compactness of triangulation
 #define MAX_CHAR_LEN 512
 
 #define MAX_VRT_TTR 64
-#define MAX_VRT_TRI 64
+#define MAX_VRT_TRI 128
 #define MAX_VRT_EDG 64
 
 #define MAX_EDG_TRI 32

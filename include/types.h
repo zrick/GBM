@@ -83,7 +83,8 @@ typedef struct VertexType{
     int kind; 
     bool bdy;
     int halo;      // -1 indicates not on halo, otherwise
-                   // index to the periodic vertex inside the domain 
+                   // index to the periodic vertex inside the domain
+    int nPth; 
 } VertexType;
 
 typedef struct EdgeType{

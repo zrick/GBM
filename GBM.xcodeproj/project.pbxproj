@@ -17,6 +17,7 @@
 		BA0AB3F622F08AD300CDC818 /* constants.h in Headers */ = {isa = PBXBuildFile; fileRef = BA0AB3F322F08AD300CDC818 /* constants.h */; };
 		BA0AB3F722F08AD300CDC818 /* constants.h in Headers */ = {isa = PBXBuildFile; fileRef = BA0AB3F322F08AD300CDC818 /* constants.h */; };
 		BA39195B22D7271500D8C20B /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA39195A22D7271500D8C20B /* main.cpp */; };
+		BA48B662236999990056675F /* gbmClass.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA48B660236999990056675F /* gbmClass.cpp */; };
 		BA5D839322EEF6390009447F /* libgbm_utils.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAC8829E22E7A72600EEC4A9 /* libgbm_utils.dylib */; };
 		BA5D839922EF013E0009447F /* libgbm_linear.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAFF211122E799D10052E39E /* libgbm_linear.dylib */; };
 		BA5D839A22EF01450009447F /* libgbm_linear.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAFF211122E799D10052E39E /* libgbm_linear.dylib */; };
@@ -25,6 +26,9 @@
 		BA5D83AA22F052120009447F /* libgbm_io.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BA5D839F22F051350009447F /* libgbm_io.dylib */; };
 		BA5D83AB22F0538C0009447F /* libgbm_io.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BA5D839F22F051350009447F /* libgbm_io.dylib */; };
 		BA8559D7234E7473007380D3 /* io.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA5D83A522F051350009447F /* io.cpp */; };
+		BA8872522362E5C200E85F12 /* errors.hpp in Headers */ = {isa = PBXBuildFile; fileRef = BAFC34E222F43C54003B72FC /* errors.hpp */; };
+		BA887255236302B700E85F12 /* path.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA887253236302B700E85F12 /* path.cpp */; };
+		BA887256236302B700E85F12 /* path.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA887253236302B700E85F12 /* path.cpp */; };
 		BA9911022304A1AD00B654CB /* namelist.cpp in Sources */ = {isa = PBXBuildFile; fileRef = BA9911002304A1AD00B654CB /* namelist.cpp */; };
 		BA9911042304A4BD00B654CB /* libgbm_utils.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BAC8829E22E7A72600EEC4A9 /* libgbm_utils.dylib */; };
 		BAA2CDB023579CC8002B088F /* libgbm_io.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = BA5D839F22F051350009447F /* libgbm_io.dylib */; };
@@ -104,10 +108,12 @@
 		BA39195722D7271500D8C20B /* GBM */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GBM; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA39195A22D7271500D8C20B /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		BA39196422D735D800D8C20B /* main.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = main.hpp; sourceTree = "<group>"; };
+		BA48B660236999990056675F /* gbmClass.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = gbmClass.cpp; sourceTree = "<group>"; };
 		BA5D839422EEF91D0009447F /* vlinear.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = vlinear.hpp; sourceTree = "<group>"; };
 		BA5D839F22F051350009447F /* libgbm_io.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libgbm_io.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA5D83A122F051350009447F /* io.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = io.hpp; sourceTree = "<group>"; };
 		BA5D83A522F051350009447F /* io.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = io.cpp; sourceTree = "<group>"; };
+		BA887253236302B700E85F12 /* path.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = path.cpp; sourceTree = "<group>"; };
 		BA9911002304A1AD00B654CB /* namelist.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = namelist.cpp; sourceTree = "<group>"; };
 		BAC8829E22E7A72600EEC4A9 /* libgbm_utils.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libgbm_utils.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		BAC882A022E7A72600EEC4A9 /* utils.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = utils.hpp; sourceTree = "<group>"; };
@@ -234,6 +240,7 @@
 			isa = PBXGroup;
 			children = (
 				BA39195A22D7271500D8C20B /* main.cpp */,
+				BA48B660236999990056675F /* gbmClass.cpp */,
 				BA39196422D735D800D8C20B /* main.hpp */,
 			);
 			path = GBM;
@@ -292,6 +299,7 @@
 			children = (
 				BAFF212522E79D8F0052E39E /* triangulate.hpp */,
 				BAFF212922E79D8F0052E39E /* triangulate.cpp */,
+				BA887253236302B700E85F12 /* path.cpp */,
 			);
 			path = triangulate;
 			sourceTree = "<group>";
@@ -314,6 +322,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BA0AB3F622F08AD300CDC818 /* constants.h in Headers */,
+				BA8872522362E5C200E85F12 /* errors.hpp in Headers */,
 				BAC882A122E7A72600EEC4A9 /* utils.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -531,6 +540,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA887255236302B700E85F12 /* path.cpp in Sources */,
+				BA48B662236999990056675F /* gbmClass.cpp in Sources */,
 				BA39195B22D7271500D8C20B /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -569,6 +580,7 @@
 			files = (
 				BAFC34E622F43C54003B72FC /* errors.cpp in Sources */,
 				BAC882AC22E7AB0200EEC4A9 /* triangulate.cpp in Sources */,
+				BA887256236302B700E85F12 /* path.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

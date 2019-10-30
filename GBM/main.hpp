@@ -24,19 +24,33 @@
 #include "io.hpp"
 #include "types.h"
 
-typedef struct GBM_Data{
+class GBM{
+    
+public:
+    Namelist nml;
+    Triangulation tri;
+
     string grid_file;
     string grid_format;
     string atlas_file;
-    bool use_atlas; 
+    string pathes_file;
     string tri_file;
-    Namelist nml;
-    Triangulation tri;
-    bool periodic[3];
-    double domain[6];
-} GBM_Data;
 
-void gbm_read_namelist(string &nl_file, GBM_Data &g);
-void gbm_init(GBM_Data &g, Triangulation &t);
+    bool use_atlas;
+    bool use_pathes;
+    bool periodic[3];
+
+    double domain[6];
+    
+    double *tauVrt;
+    
+    void read_namelist(string &nl_file);
+    void init();
+    
+private:
+    friend Triangulation;
+    
+};
+
 #define main_h
 #endif /* main_h */

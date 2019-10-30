@@ -10,13 +10,14 @@
 #define LINEAR_
 
 #include "constants.h"
+#include "errors.hpp"
 
 // BLAS ROUTINES
 int  qrdcmp(double **a,const int n,const int np,double *c,double *d);
 void qrsolv(double **a, const int n, const int np, double *c, double *d, double *b);
 void rsolv(double **a,const int n,const int np,double *d,double *b);
 
-int  m_in_qrdcmp(double ***a, const int n, const int np, const int nm, double **c, double **d);
+int  m_in_qrdcmp(double ***a, const int n, const int np, const int nm, double **c, double **d, double *wrk=nullptr);
 void m_in_qrsolv(double ***a, const int n, const int np, const int nm, double **c, double **d, double **b);
 void m_in_rsolv (double ***a, const int n, const int np, const int nm, double **d, double **b);
 

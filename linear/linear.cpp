@@ -96,11 +96,17 @@ void rsolv(double **a,const int n,const int np,double *d,double *b)
 }
 
 
-int m_in_qrdcmp(double ***a,const int n,const int np,const int nm,double **c,double **d){
+int m_in_qrdcmp(double ***a,const int n,const int np,const int nm,double **c,double **d,
+                double *wrk){
     int i,j,k,l,sgn[nm];
-    double sum[nm],scale[nm],sigma[nm],tau[nm];
+    double *sum, *scale, *sigma, *tau;//sum[nm],scale[nm],sigma[nm],tau[nm];
     int sing_all,sing[nm];
     
+    sum = &wrk[0];
+    scale=&wrk[1*nm];
+    sigma=&wrk[2*nm];
+    tau  =&wrk[3*nm];
+
     sing_all=0;
     for (l=0;l<nm;++l)
         sing[l]=0;

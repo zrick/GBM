@@ -13,11 +13,12 @@ int main(int argc, const char * argv[]) {
     double minv,maxv,minv_ref,maxv_ref,dminv,dmaxv;
     string ofile, gridFormat;
     string testGrid,rundir;
-    int testList[] = {3,4,6,8,10,12,16,20,30};
-    int nTest = 9;//10;
-    int sType = SPLINE_O2_EDGES;
+    int testList[] = {3,4,6,8,10,12,16,20,30,40};
+    int nTest = 10;//10;
+    int sType = SPLINE_O1; 
     int ii,jj,kk,nn;
     double x0[3], ***val3d;
+    double d[6];
     bool p[3]={false,false,false};
 
     Namelist nl("/Users/zrick/WORK/research_projects/GBM/vspline.nml");
@@ -29,8 +30,11 @@ int main(int argc, const char * argv[]) {
         string testGrid("/Users/zrick/Work/research_projects/GBM/cgal_3periodic/triangulation_");
         testGrid += std::to_string(testList[iTest]);
         GBMLog(string(to_string(iTest) + ":" +testGrid));
-        
-        Triangulation tri((char *)&testGrid.c_str()[0],p);
+        for ( int id=0; id<3; ++id ) {
+            d[2*id] =0.;
+            d[2*id+1]=1.;
+        }
+        Triangulation tri((char *)&testGrid.c_str()[0],p,d);
         p[0]=true;
         p[1]=true;
         p[2]=true; 

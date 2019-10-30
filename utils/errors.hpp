@@ -13,7 +13,7 @@
 #include "utils.hpp"
 
 // any kind of error
-#define GBMERR              1
+#define GBMERR            1
 
 // general issues
 #define GBMERR_GENERAL   10
@@ -21,6 +21,7 @@
 #define GBMERR_DIM       12
 #define GBMERR_NAMELIST  13
 #define GBMERR_RESIDUAL  14
+#define GBMERR_MALLOC    15
 
 // grid-related problems
 #define GBMERR_GRID      20

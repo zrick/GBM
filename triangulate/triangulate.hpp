@@ -14,6 +14,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <stdio.h>
 #include <sstream>
 #include <sys/stat.h>
@@ -37,7 +38,9 @@ public:
     Triangulation(char *fname,bool p[3], double *dom);
  
     // Function Members
+    int allocateWrk(); 
     void writeGrid(string grid_file, string grid_format);
+    void writePths(string path_file, string grid_format);
     void printHull(int format);
     
     void printVertex(VertexType *v, int level);
@@ -51,6 +54,7 @@ public:
     
     void ConstructHull();
     void ConstructHalo();
+    void ConstructPathes(string pfile); 
     
     void TtrSplinesAlloc(int sType);
     void TtrSplinesLHS(int sType);
@@ -59,7 +63,7 @@ public:
     void TtrDerivativeSplines(int sType, int direction, double *v);
 
     // Data Members
-    int nDim, nVrt, nEdg, nTri, nTtr, nHul;
+    int nDim, nVrt, nEdg, nTri, nTtr, nHul, nPth;
     int nTtr_inner, nVrt_inner;
     double box[6], halo_box[6];
     double volume;
@@ -104,19 +108,45 @@ private:
     void hashBoxesSort();
     void hashBoxAddVrt(int iv);
     void hashBoxAddTtr(int it);
+    void hashBoxIndices(double *p, double *dx, int *i); 
+    HashBox * hashBoxFromPoint(double *p, double *dx);
 
-
-    double ***QRSplines_a[MAX_SPLINES];
-    double **QRSplines_b[MAX_SPLINES];
-    double **QRSplines_c[MAX_SPLINES];
-    double **QRSplines_d[MAX_SPLINES];
-    double *QRSplines_bare[MAX_SPLINES];
+    double *** QRSplines_a[MAX_SPLINES];
+    double **  QRSplines_b[MAX_SPLINES];
+    double **  QRSplines_c[MAX_SPLINES];
+    double **  QRSplines_d[MAX_SPLINES];
+    double *   QRSplines_bare[MAX_SPLINES];
     
     int TtrSplinesND(int sType);
     
     bool haloDefined; 
     bool periodic[3];
-    double *domain; 
+    double *domain;
+    
+    double *hulXYZ; 
+    
+    int wrkSize; 
+    void *wrk;
+    vector<class Path> pth; 
+    
+    friend class Path;
 };
 
+
+class Path {
+
+public:
+    Path(); 
+    Path(int *p, int n, double tau, Triangulation *t);
+
+    int len();
+
+    
+private:
+    vector<int> vrt;
+    vector<int> edg; 
+    friend class Triangulation;
+    double tau; 
+    
+}; 
 #endif // ifndef triangulate_h
